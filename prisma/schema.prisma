@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CALLER
+  DISPATCHER
+  ADMIN
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_TRIP
+  OFF_DUTY
+}
+
+enum AmbulanceType {
+  BASIC
+  ICU
+  CARDIAC
+}
+
+enum AmbulanceStatus {
+  AVAILABLE
+  DISPATCHED
+  MAINTENANCE
+}
+
+enum RequestPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum RequestStatus {
+  PENDING
+  ASSIGNED
+  EN_ROUTE
+  PICKED_UP
+  AT_HOSPITAL
+  COMPLETED
+  CANCELLED
+}
+
+enum DispatchStatus {
+  DISPATCHED
+  ARRIVED_AT_SCENE
+  EN_ROUTE_TO_HOSPITAL
+  ARRIVED_AT_HOSPITAL
+  COMPLETED
+  CANCELLED
+}
+
+enum TripStatus {
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  phone        String
+  role         Role      @default(CALLER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  driver             Driver?
+  emergencyRequests  EmergencyRequest[] @relation("CallerRequests")
+  dispatches         Dispatch[]         @relation("DispatcherDispatches")
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  refreshTokens      RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Driver {
+  id        String       @id @default(uuid())
+  userId    String?      @unique
+  name      String
+  phone     String
+  licenseNo String       @unique
+  status    DriverStatus @default(OFF_DUTY)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  deletedAt DateTime?
+
+  user       User?       @relation(fields: [userId], references: [id])
+  ambulances Ambulance[]
+  dispatches Dispatch[]
+
+  @@index([status])
+}
+
+model Ambulance {
+  id           String          @id @default(uuid())
+  plateNumber  String          @unique
+  type         AmbulanceType
+  status       AmbulanceStatus @default(AVAILABLE)
+  currentLat   Float
+  currentLng   Float
+  driverId     String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  deletedAt    DateTime?
+
+  driver       Driver?         @relation(fields: [driverId], references: [id])
+  dispatches   Dispatch[]
+
+  @@index([status])
+}
+
+model Hospital {
+  id            String    @id @default(uuid())
+  name          String
+  address       String
+  lat           Float
+  lng           Float
+  totalBeds     Int
+  availableBeds Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  dispatches    Dispatch[]
+}
+
+model EmergencyRequest {
+  id           String          @id @default(uuid())
+  callerId     String
+  patientName  String
+  contactPhone String
+  pickupLat    Float
+  pickupLng    Float
+  priority     RequestPriority
+  status       RequestStatus   @default(PENDING)
+  description  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  deletedAt    DateTime?
+
+  caller       User            @relation("CallerRequests", fields: [callerId], references: [id])
+  dispatches   Dispatch[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([status, priority, createdAt])
+}
+
+model Dispatch {
+  id                String         @id @default(uuid())
+  requestId         String
+  ambulanceId       String
+  driverId          String
+  dispatcherId      String
+  hospitalId        String?
+  dispatchedAt      DateTime       @default(now())
+  arrivedAt         DateTime?
+  pickupAt          DateTime?
+  hospitalArrivalAt DateTime?
+  completedAt       DateTime?
+  status            DispatchStatus @default(DISPATCHED)
+
+  request           EmergencyRequest @relation(fields: [requestId], references: [id])
+  ambulance         Ambulance        @relation(fields: [ambulanceId], references: [id])
+  driver            Driver           @relation(fields: [driverId], references: [id])
+  dispatcher        User             @relation("DispatcherDispatches", fields: [dispatcherId], references: [id])
+  hospital          Hospital?        @relation(fields: [hospitalId], references: [id])
+  trip              Trip?
+}
+
+model Trip {
+  id          String     @id @default(uuid())
+  dispatchId  String     @unique
+  distanceKm  Float?
+  durationMin Int?
+  fare        Float?
+  status      TripStatus @default(ONGOING)
+  createdAt   DateTime   @default(now())
+
+  dispatch    Dispatch   @relation(fields: [dispatchId], references: [id])
+  payment     Payment?
+}
+
+model Payment {
+  id                 String        @id @default(uuid())
+  tripId             String        @unique
+  amount             Float
+  currency           String        @default("USD")
+  gatewayProvider    String
+  gatewayTransactionId String?
+  status             PaymentStatus @default(PENDING)
+  paidAt             DateTime?
+  createdAt          DateTime      @default(now())
+
+  trip               Trip          @relation(fields: [tripId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  createdAt  DateTime @default(now())
+
+  actor      User     @relation(fields: [actorId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
