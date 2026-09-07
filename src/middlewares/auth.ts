@@ -16,10 +16,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return next(new AppError(401, 'You are not logged in. Please log in to get access.'));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'secret') as any;
 
-    const currentUser = await prisma.user.findUnique({
-      where: { id: decoded.id },
+    const currentUser = await prisma.user.findFirst({
+      where: { id: decoded.id, deletedAt: null, isActive: true },
     });
 
     if (!currentUser) {
