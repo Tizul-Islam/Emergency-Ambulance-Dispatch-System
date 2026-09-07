@@ -1,6 +1,6 @@
 /**
  * Test Script to verify authentication and RBAC
- * 
+ *
  * Instructions:
  * 1. Ensure your database is running and migrated (`npm run prisma:migrate`)
  * 2. Ensure your database is seeded (`npm run seed`)
@@ -38,7 +38,10 @@ async function runTests() {
   console.log('\n[Test 2] Logging in as Caller...');
   const callerLogin = await fetchApi('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email: 'caller1@dispatch.com', password: 'hashed_password_placeholder' }),
+    body: JSON.stringify({
+      email: 'caller1@dispatch.com',
+      password: 'hashed_password_placeholder',
+    }),
   });
   const callerToken = callerLogin.data.data?.accessToken;
   if (callerToken) {
@@ -72,7 +75,10 @@ async function runTests() {
 
   // 5. Login as ADMIN
   console.log('\n[Test 5] Logging in as Admin...');
-  const adminLogin = await fetchAuth('/auth/login', { email: 'admin@dispatch.com', password: 'hashed_password_placeholder' });
+  const adminLogin = await fetchAuth('/auth/login', {
+    email: 'admin@dispatch.com',
+    password: 'hashed_password_placeholder',
+  });
   const adminToken = adminLogin.data?.accessToken;
   if (adminToken) {
     console.log('✅ Passed: Admin logged in successfully');
