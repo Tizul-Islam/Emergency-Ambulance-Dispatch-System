@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AmbulanceType, AmbulanceStatus } from '@prisma/client';
+import { AmbulanceType, AmbulanceStatus } from '../../generated/prisma/client';
 import { paginationSchema } from '../../shared/common.validation';
 
 export const createAmbulanceSchema = z.object({

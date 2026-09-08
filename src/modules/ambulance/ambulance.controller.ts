@@ -3,7 +3,7 @@ import * as ambulanceService from './ambulance.service';
 import { sendSuccessResponse } from '../../utils/responseHelper';
 import { AppError } from '../../utils/AppError';
 import { redis } from '../../config';
-import { AmbulanceStatus } from '@prisma/client';
+import { AmbulanceStatus } from '../../generated/prisma/client';
 
 export const createAmbulance = async (req: Request, res: Response, next: NextFunction) => {
   try {

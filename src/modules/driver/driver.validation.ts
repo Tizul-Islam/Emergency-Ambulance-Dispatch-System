@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DriverStatus } from '@prisma/client';
+import { DriverStatus } from '../../generated/prisma/client';
 import { paginationSchema } from '../../shared/common.validation';
 
 export const createDriverSchema = z.object({

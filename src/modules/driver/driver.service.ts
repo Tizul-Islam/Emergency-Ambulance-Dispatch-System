@@ -1,8 +1,8 @@
-import { PrismaClient, DriverStatus } from '@prisma/client';
+import { PrismaClient, DriverStatus } from '../../generated/prisma/client';
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../audit/audit.service';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 
 export const createDriver = async (data: any) => {
   if (data.userId) {

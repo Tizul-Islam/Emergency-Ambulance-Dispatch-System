@@ -1,10 +1,10 @@
-import { PrismaClient, AmbulanceType, AmbulanceStatus } from '@prisma/client';
+import { PrismaClient, AmbulanceType, AmbulanceStatus } from '../../generated/prisma/client';
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../audit/audit.service';
 import { haversineDistance, selectNearestAvailable } from '../dispatch/dispatch.logic';
 import { redis } from '../../config';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 
 export const createAmbulance = async (data: {
   registrationNumber: string;
