@@ -1,6 +1,1 @@
-export {
-  successResponse,
-  errorResponse,
-  sendSuccessResponse,
-  sendErrorResponse,
-} from './response';
+export { successResponse, errorResponse, sendSuccessResponse, sendErrorResponse } from './response';

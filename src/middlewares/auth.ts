@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient, Role } from '../generated/prisma/client';
 import { AppError } from '../utils/AppError';
 
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma';
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
