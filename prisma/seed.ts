@@ -1,7 +1,13 @@
-import { PrismaClient, Role, AmbulanceType, AmbulanceStatus, DriverStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  Role,
+  AmbulanceType,
+  AmbulanceStatus,
+  DriverStatus,
+} from '../src/generated/prisma/client';
 import bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+import prisma from '../src/utils/prisma';
 
 async function main() {
   console.log('Clearing existing data...');
