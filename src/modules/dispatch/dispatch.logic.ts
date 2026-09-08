@@ -1,4 +1,4 @@
-import { RequestPriority, AmbulanceStatus, RequestStatus, AmbulanceType } from '@prisma/client';
+import { RequestPriority, AmbulanceStatus, RequestStatus, AmbulanceType } from '../../generated/prisma/client';
 
 export const PRIORITY_WEIGHTS: Record<RequestPriority, number> = {
   CRITICAL: 1,

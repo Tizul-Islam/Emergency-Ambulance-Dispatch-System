@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { RequestStatus } from '@prisma/client';
+import { RequestStatus } from '../../generated/prisma/client';
 
 export const updateDispatchStatusSchema = z.object({
   body: z.object({

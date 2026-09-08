@@ -8,13 +8,13 @@ import {
   DispatchStatus,
   TripStatus,
   Prisma,
-} from '@prisma/client';
+} from '../../generated/prisma/client';
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../audit/audit.service';
 import { selectNearestAvailable } from '../dispatch/dispatch.logic';
 import { redis } from '../../config';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 
 export const createRequest = async (
   data: {

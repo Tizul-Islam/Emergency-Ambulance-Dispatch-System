@@ -11,7 +11,7 @@ import {
   searchRequestsSchema,
 } from './request.validation';
 import { authenticate, requireRole } from '../../middlewares/auth';
-import { Role } from '@prisma/client';
+import { Role } from '../../generated/prisma/client';
 import { requestLimiter } from '../../middlewares/rateLimiter';
 
 const router = Router();

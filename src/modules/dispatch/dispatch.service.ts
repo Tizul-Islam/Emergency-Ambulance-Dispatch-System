@@ -7,12 +7,12 @@ import {
   TripStatus,
   RequestPriority,
   Prisma,
-} from '@prisma/client';
+} from '../../generated/prisma/client';
 import { AppError } from '../../utils/AppError';
 import { isValidTransition, haversineDistance } from './dispatch.logic';
 import { redis } from '../../config';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 
 const mapToDispatchStatus = (reqStatus: RequestStatus): DispatchStatus | undefined => {
   switch (reqStatus) {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { RequestPriority, RequestStatus } from '@prisma/client';
+import { RequestPriority, RequestStatus } from '../../generated/prisma/client';
 import { paginationSchema } from '../../shared/common.validation';
 
 export const createRequestSchema = z.object({
