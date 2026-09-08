@@ -1,7 +1,7 @@
-import { PrismaClient, TripStatus, Role } from '@prisma/client';
+import { PrismaClient, TripStatus, Role } from '../../generated/prisma/client';
 import { AppError } from '../../utils/AppError';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 
 export const getTrips = async (filters: { status?: TripStatus; page: number; limit: number; sortBy?: string }) => {
   const { status, page, limit } = filters;

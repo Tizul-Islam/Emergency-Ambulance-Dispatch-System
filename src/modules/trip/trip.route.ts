@@ -3,7 +3,7 @@ import * as tripController from './trip.controller';
 import { validate } from '../../middlewares/validate';
 import { getTripsSchema } from './trip.validation';
 import { authenticate, requireRole } from '../../middlewares/auth';
-import { Role } from '@prisma/client';
+import { Role } from '../../generated/prisma/client';
 
 const router = Router();
 

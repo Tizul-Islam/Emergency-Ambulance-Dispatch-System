@@ -3,7 +3,7 @@ import { getMe, updateMe } from './user.controller';
 import { validate } from '../../middlewares/validate';
 import { updateMeSchema } from './user.validation';
 import { authenticate, requireRole } from '../../middlewares/auth';
-import { Role } from '@prisma/client';
+import { Role } from '../../generated/prisma/client';
 import { sendSuccessResponse } from '../../utils/responseHelper';
 
 const router = Router();

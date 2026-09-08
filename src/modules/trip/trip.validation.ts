@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TripStatus } from '@prisma/client';
+import { TripStatus } from '../../generated/prisma/client';
 import { paginationSchema } from '../../shared/common.validation';
 
 export const getTripsSchema = paginationSchema.extend({

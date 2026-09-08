@@ -1,8 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../audit/audit.service';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 
 export const createHospital = async (data: {
   name: string;

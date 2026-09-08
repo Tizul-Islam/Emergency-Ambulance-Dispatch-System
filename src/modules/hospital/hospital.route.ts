@@ -9,7 +9,7 @@ import {
   searchHospitalsSchema,
 } from './hospital.validation';
 import { authenticate, requireRole } from '../../middlewares/auth';
-import { Role } from '@prisma/client';
+import { Role } from '../../generated/prisma/client';
 
 const router = Router();
 

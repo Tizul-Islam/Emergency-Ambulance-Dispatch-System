@@ -1,10 +1,10 @@
 import Stripe from 'stripe';
-import { PrismaClient, PaymentStatus, PaymentProvider, Role } from '@prisma/client';
+import { PrismaClient, PaymentStatus, PaymentProvider, Role } from '../../generated/prisma/client';
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../audit/audit.service';
 import { createNotification } from '../notification/notification.service';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2026-08-26.dahlia' as any,
 });
