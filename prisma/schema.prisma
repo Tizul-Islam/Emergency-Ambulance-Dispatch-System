@@ -1,11 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 enum Role {
@@ -194,9 +193,9 @@ model EmergencyRequest {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
-  patient    User       @relation("PatientRequests", fields: [patientId], references: [id])
-  dispatches Dispatch[]
-  trips      Trip[]
+  patient           User              @relation("PatientRequests", fields: [patientId], references: [id])
+  dispatches        Dispatch[]
+  trips             Trip[]
   incidentHistories IncidentHistory[]
 
   @@index([status])
@@ -297,13 +296,13 @@ model Notification {
 }
 
 model IncidentHistory {
-  id                 String           @id @default(uuid())
+  id                 String   @id @default(uuid())
   emergencyRequestId String
   action             String
   details            String?
-  actorId            String?          // User ID who performed the action
-  createdAt          DateTime         @default(now())
+  actorId            String? // User ID who performed the action
+  createdAt          DateTime @default(now())
 
-  emergencyRequest   EmergencyRequest @relation(fields: [emergencyRequestId], references: [id])
-  actor              User?            @relation(fields: [actorId], references: [id])
+  emergencyRequest EmergencyRequest @relation(fields: [emergencyRequestId], references: [id])
+  actor            User?            @relation(fields: [actorId], references: [id])
 }
