@@ -1,13 +1,25 @@
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient } = require('./src/generated/prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  const models = ['user', 'ambulance', 'driver', 'hospital', 'emergencyRequest', 'dispatch', 'trip', 'payment', 'auditLog', 'notification', 'refreshToken'];
+  const models = [
+    'user',
+    'ambulance',
+    'driver',
+    'hospital',
+    'emergencyRequest',
+    'dispatch',
+    'trip',
+    'payment',
+    'auditLog',
+    'notification',
+    'refreshToken',
+  ];
   for (const m of models) {
     try {
       await prisma[m].findFirst();
       console.log(m + ' OK');
-    } catch(e) {
+    } catch (e) {
       console.log(m + ' ERROR: ' + e.message);
     }
   }
