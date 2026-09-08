@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as adminService from './admin.service';
 import { sendSuccessResponse } from '../../utils/responseHelper';
 import { AppError } from '../../utils/AppError';
-import { Role, RequestPriority } from '@prisma/client';
+import { Role, RequestPriority } from '../../generated/prisma/client';
 
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {

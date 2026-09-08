@@ -5,11 +5,11 @@ import {
   AmbulanceStatus,
   RequestStatus,
   RequestPriority,
-} from '@prisma/client';
+} from '../../generated/prisma/client';
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../audit/audit.service';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 
 export const getUsers = async (role: Role | undefined, page: number, limit: number) => {
   const where: { deletedAt: null; role?: Role } = { deletedAt: null };

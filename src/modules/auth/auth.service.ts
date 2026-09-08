@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient, Role } from '../../generated/prisma/client';
 import { AppError } from '../../utils/AppError';
 
-const prisma = new PrismaClient();
+import prisma from '../../utils/prisma';
 
 const generateTokens = (userId: string, role: string) => {
   const accessToken = jwt.sign({ id: userId, role }, process.env.JWT_ACCESS_SECRET || 'secret', {
