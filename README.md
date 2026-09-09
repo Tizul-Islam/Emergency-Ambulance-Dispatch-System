@@ -198,7 +198,7 @@ To explore the system fully, you can seed the database with an admin user, or si
 
 ## 📬 Postman Collection
 The complete Postman Collection (JSON export) covering all endpoints, authentication flows, and failure cases is located at the root of the project:
-`C:/Users/Tizul Islam/.gemini/antigravity-ide/brain/1b427a32-cd19-4388-a6c4-db821800f280/Emergency_Ambulance_Dispatch_Postman_Collection.json`
+`./Postman_Collection.json`
 
 You can easily import this file directly into your Postman workspace.
 

@@ -49,6 +49,22 @@ const createRequest = (name, method, urlPath, bodyObj = null, desc = '') => {
     req.request.description = desc;
   }
 
+  const isFailure = name.includes('FAILURE');
+  const expectedStatus = isFailure ? '400, 401, 403, 404, 409' : '200, 201';
+  req.event = [
+    {
+      listen: 'test',
+      script: {
+        exec: [
+          `pm.test("Status code is correct", function () {`,
+          `    pm.expect(pm.response.code).to.be.oneOf([${expectedStatus}]);`,
+          `});`
+        ],
+        type: 'text/javascript'
+      }
+    }
+  ];
+
   return req;
 };
 
@@ -443,12 +459,13 @@ const attachTest = (folderName, requestName, execLines) => {
   if (!folder) return;
   const item = folder.item.find((r) => r.name === requestName);
   if (!item) return;
-  item.event = [
-    {
-      listen: 'test',
-      script: { exec: execLines, type: 'text/javascript' },
-    },
-  ];
+  if (!item.event) item.event = [{ listen: 'test', script: { exec: [], type: 'text/javascript' } }];
+  const testEvent = item.event.find(e => e.listen === 'test');
+  if (testEvent) {
+    testEvent.script.exec.push(...execLines);
+  } else {
+    item.event.push({ listen: 'test', script: { exec: execLines, type: 'text/javascript' } });
+  }
 };
 
 ['Login (Admin)', 'Login (Dispatcher)', 'Login (Patient)', 'Refresh Token'].forEach((name) =>

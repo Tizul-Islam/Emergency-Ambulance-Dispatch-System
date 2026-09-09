@@ -1,1262 +1,929 @@
-# Emergency Ambulance Dispatch System — Project Requirements & Compliance Checklist
+I have provided a document named `Project Requirements.md` for my project:
 
-> **Purpose:** This document is the single source of truth for verifying that the Emergency Ambulance Dispatch System satisfies the assignment requirements.  
-> **Audit rule:** A requirement is considered **PASS** only when it is implemented in the backend, connected to the database where applicable, protected/validated where required, and demonstrable through Postman or the deployed API.  
-> **Important:** This checklist must be audited against the current source code before claiming 100% completion.
+**Emergency Ambulance Dispatch System**
 
----
+I want you to perform a COMPLETE and STRICT source-code audit of my project.
 
-## 1. Project Overview
+IMPORTANT:
+Do NOT assume that a requirement is completed just because it is mentioned in `Project Requirements.md`.
 
-The **Emergency Ambulance Dispatch System** is a backend-focused emergency healthcare platform for receiving emergency requests, determining priority, locating suitable available ambulances, dispatching drivers, tracking the trip lifecycle, selecting hospitals, recording incidents, processing payments, and maintaining secure audit history.
+You must inspect my ACTUAL PROJECT SOURCE CODE and verify every requirement against the implementation.
 
-### Main Emergency Workflow
+Your goal is to determine:
 
-```text
+1. What is correctly implemented
+2. What is partially implemented
+3. What is missing
+4. What is incorrectly implemented
+5. What is insecure or technically weak
+6. What does not follow the assignment requirements
+7. What needs to be fixed before submission
+8. Whether the project can honestly be considered 100% complete
+
+==================================================
+PROJECT REQUIREMENTS
+====================
+
+Use the attached `Project Requirements.md` as the SINGLE SOURCE OF TRUTH.
+
+You must check EVERY requirement in that document.
+
+DO NOT SKIP ANY SECTION.
+
+The document contains requirements for:
+
+* Project planning
+* 3 fixed primary roles
+* PostgreSQL
+* Prisma
+* TypeScript
+* Express.js
+* Zod/Joi
+* JWT/Bearer authentication
+* Password hashing
+* RBAC
+* Emergency requests
+* Priority management
+* Ambulance management
+* Driver management
+* Hospital management
+* Trip lifecycle
+* Emergency state transitions
+* Ambulance dispatch logic
+* Duplicate assignment prevention
+* Prisma transactions
+* Concurrency safety
+* Database relationships
+* Database indexes
+* Unique constraints
+* Soft delete
+* Audit logs
+* Incident history
+* Notifications
+* Mandatory payment gateway
+* Payment callbacks/webhooks
+* Payment verification
+* Payment status tracking
+* Pagination
+* Filtering
+* Sorting
+* Search
+* Rate limiting
+* Helmet
+* CORS
+* API versioning
+* RESTful design
+* Error handling
+* Reports and analytics
+* Postman documentation
+* Negative testing
+* Deployment
+* Environment variables
+* Project structure
+* README
+* ERD
+* Prisma schema
+* Final QA
+* 20+ meaningful APIs
+* Final compliance scorecard
+
+==================================================
+STRICT AUDIT RULE
+=================
+
+A requirement can only be marked:
+
+PASS
+
+if you can verify that it is actually implemented in the source code and works correctly.
+
+Use:
+
+PASS = Fully implemented and correctly working
+
+PARTIAL = Some implementation exists but it is incomplete, weak, or missing an important part
+
+FAIL = Implementation exists but does not satisfy the requirement correctly
+
+MISSING = No implementation found
+
+NOT APPLICABLE = Only when the requirement genuinely does not apply, and explain why
+
+DO NOT mark something PASS merely because:
+
+* A route name exists
+* A function exists
+* A comment mentions it
+* It appears in README
+* It appears in Prisma schema but is not actually used
+* It appears in Postman but backend implementation is missing
+* It works only locally but not in production
+* It uses a fake/mock implementation
+* It is hardcoded
+* It is manually changing database status
+* It is not protected by authentication/RBAC where required
+
+==================================================
+SOURCE CODE INSPECTION
+======================
+
+Inspect the complete project, including where applicable:
+
+* package.json
+* tsconfig.json
+* src/
+* controllers
+* services
+* routes
+* middleware
+* validators
+* utils
+* config
+* error handlers
+* authentication code
+* authorization/RBAC
+* Prisma schema
+* Prisma migrations
+* seed files
+* database queries
+* transaction logic
+* payment integration
+* Redis configuration
+* rate limiter
+* Helmet
+* CORS
+* environment configuration
+* Postman collection
+* README
+* deployment configuration
+* Vercel/Render configuration
+* API route registration
+* production configuration
+
+If something cannot be verified from the provided files, mark it as:
+
+NOT VERIFIED
+
+Do not assume it works.
+
+==================================================
+API AUDIT
+=========
+
+Find EVERY registered API route from the source code.
+
+Create a complete API inventory.
+
+For each API show:
+
+* HTTP method
+* Actual route
+* Controller
+* Service
+* Authentication required?
+* Required role
+* Validation
+* Database operation
+* Response format
+* HTTP status code
+* Requirement satisfied?
+* Evidence/file location
+
+Then compare the actual API inventory against the required APIs in `Project Requirements.md`.
+
+IMPORTANT:
+
+The project requires at least 20 meaningful APIs.
+
+Count ONLY real, meaningful, database-connected APIs.
+
+Do NOT count:
+
+* duplicate routes
+* dummy routes
+* test routes
+* health endpoint as a business API
+* unnecessary CRUD endpoints created only to reach 20
+* fake payment endpoints
+* unused routes
+
+Tell me the exact number of meaningful APIs.
+
+==================================================
+ROLE / RBAC AUDIT
+=================
+
+The assignment requires exactly 3 fixed primary roles:
+
+PATIENT
+DISPATCHER
+ADMIN
+
+Verify:
+
+* Where roles are defined
+* How roles are stored
+* Authentication middleware
+* Role middleware
+* Which APIs each role can access
+* Patient ownership checks
+* Dispatcher permissions
+* Admin permissions
+* Whether any unauthorized role can access protected APIs
+* Whether Driver/Hospital have accidentally been implemented as extra primary RBAC roles
+* Whether the implementation actually follows the assignment's 3-role requirement
+
+Create a role-permission matrix.
+
+==================================================
+AUTHENTICATION AUDIT
+====================
+
+Verify:
+
+* Register
+* Login
+* Password hashing
+* JWT access token
+* Refresh token
+* Refresh token security
+* Logout
+* Token invalidation strategy
+* Token expiration
+* Bearer token middleware
+* Protected routes
+* Invalid token handling
+* Expired token handling
+* Password never returned
+* Secret management
+
+Test logically whether authentication is actually secure.
+
+==================================================
+EMERGENCY WORKFLOW AUDIT
+========================
+
+Verify the complete workflow:
+
 Emergency Request
-       │
-       ▼
-Determine Priority
-       │
-       ▼
-Find Available Ambulance
-       │
-       ▼
-Dispatch
-       │
-       ▼
-Driver Accepts
-       │
-       ▼
-Ambulance En Route
-       │
-       ▼
-Patient Pickup
-       │
-       ▼
-Hospital Selection
-       │
-       ▼
-Ambulance En Route to Hospital
-       │
-       ▼
-Hospital Arrival
-       │
-       ▼
-Trip Completed
-       │
-       ▼
-Ambulance Available Again
-```
-
----
-
-# 2. Fixed Primary Roles
-
-The assignment requires exactly **3 fixed primary roles** with strict RBAC.
-
-## Recommended project roles
-
-1. **PATIENT** — Patient / Caller
-2. **DISPATCHER** — Dispatcher / Operations
-3. **ADMIN** — System Administrator
-
-> Driver and Hospital should be represented as operational entities/profiles linked to users, or handled through the three fixed roles according to the final authorization design. Do **not** silently create additional primary RBAC roles if the assignment evaluator expects exactly three fixed roles.
-
-### PATIENT permissions
-
-- Register and login
-- Manage own profile
-- Create emergency request
-- Provide patient/emergency information
-- Provide pickup location
-- View own emergency requests
-- View own trip status
-- View assigned ambulance information where permitted
-- Receive notifications
-- Initiate required trip/payment flow where applicable
-- Cancel own request only when business rules permit
-- View own payment status/history
-
-### DISPATCHER permissions
-
-- Login
-- View emergency requests
-- Search/filter/sort emergency requests
-- Review and assign priority
-- View available ambulances
-- View suitable ambulances
-- Assign ambulance/driver
-- Monitor active trips
-- Handle dispatch failures
-- Cancel/reassign according to business rules
-- Select/update hospital destination
-- View operational notifications
-- View relevant incident history
-
-### ADMIN permissions
-
-- All administrative management operations
-- Manage users
-- Manage roles/statuses where allowed
-- Manage ambulances
-- Manage driver profiles
-- Manage hospitals
-- Monitor emergency requests and trips
-- View dashboard statistics
-- View reports and analytics
-- View audit logs
-- Manage/override operational records only where explicitly allowed
-- Review payments
-- Perform soft-delete/restore operations where implemented
-
----
-
-# 3. Required Technology Stack
-
-| Area | Required / Recommended | Compliance |
-|---|---|---|
-| Runtime | Node.js | ☐ |
-| Language | TypeScript | ☐ |
-| Framework | Express.js | ☐ |
-| Database | PostgreSQL | ☐ |
-| ORM | Prisma | ☐ |
-| Validation | Zod or Joi | ☐ |
-| Authentication | JWT / Better Auth / Clerk | ☐ |
-| Password hashing | Bcrypt or equivalent secure hashing | ☐ |
-| API documentation/testing | Postman / Swagger | ☐ |
-| Deployment | Vercel / Render or equivalent accepted platform | ☐ |
-| Redis | Optional but recommended | ☐ |
-| Email | Optional | ☐ |
-| File storage | Optional | ☐ |
-| Payment | **MANDATORY:** bKash / Stripe / SSLCommerz | ☐ |
-
----
-
-# 4. Core Features
-
-## Emergency Requests
-
-- ☐ Create emergency request
-- ☐ Patient information
-- ☐ Caller information
-- ☐ Emergency description
-- ☐ Pickup location
-- ☐ Location coordinates where applicable
-- ☐ Emergency priority
-- ☐ Request status
-- ☐ Request timestamps
-- ☐ Request ownership/access control
-- ☐ Cancellation rules
-- ☐ Request history
-
-## Priority Levels
-
-- ☐ CRITICAL
-- ☐ HIGH
-- ☐ MEDIUM
-- ☐ LOW
-
-Higher-priority requests must be processed before lower-priority requests where operationally appropriate.
-
-## Ambulance Management
-
-- ☐ Register ambulance
-- ☐ Update ambulance
-- ☐ View ambulance
-- ☐ List ambulances
-- ☐ Soft-delete ambulance
-- ☐ Ambulance registration/identifier
-- ☐ Ambulance type
-- ☐ Equipment/capability
-- ☐ Operational status
-- ☐ Availability state
-- ☐ Driver association
-
-## Ambulance Status
-
-- ☐ AVAILABLE
-- ☐ ASSIGNED
-- ☐ EN_ROUTE
-- ☐ PICKING_UP
-- ☐ TO_HOSPITAL
-- ☐ MAINTENANCE
-- ☐ OFFLINE
-
-## Driver Management
-
-- ☐ Driver profile
-- ☐ Driver availability
-- ☐ Driver-to-ambulance relationship
-- ☐ Assigned emergency visibility
-- ☐ Assignment acceptance/rejection or equivalent operational action
-- ☐ Status update permissions
-- ☐ Driver activity history
-
-## Hospital Management
-
-- ☐ Hospital registration
-- ☐ Hospital information
-- ☐ Emergency availability
-- ☐ Bed availability
-- ☐ ICU availability where applicable
-- ☐ Hospital status
-- ☐ Update hospital availability
-- ☐ Select suitable hospital
-- ☐ Incoming emergency notification
-
----
-
-# 5. Emergency / Trip Lifecycle
-
-The implementation must enforce valid state transitions.
-
-```text
-REQUESTED
-   ↓
-PRIORITY_ASSIGNED
-   ↓
-AMBULANCE_ASSIGNED
-   ↓
-DRIVER_ACCEPTED
-   ↓
-EN_ROUTE
-   ↓
-PATIENT_PICKED_UP
-   ↓
-TO_HOSPITAL
-   ↓
-ARRIVED
-   ↓
-COMPLETED
-```
-
-Additional terminal states:
-
-- ☐ CANCELLED
-- ☐ FAILED
-
-### State-transition requirements
-
-- ☐ Invalid transitions are rejected
-- ☐ Only authorized roles can perform transitions
-- ☐ Every important transition is persisted
-- ☐ Related ambulance status is synchronized
-- ☐ Related assignment status is synchronized
-- ☐ Hospital information is synchronized when selected
-- ☐ Completion makes the ambulance available again
-- ☐ Cancellation/failure releases operational resources where appropriate
-
----
-
-# 6. Ambulance Dispatch Logic
-
-The dispatch operation must be meaningful business logic, not simple CRUD.
-
-Candidate ambulance selection should consider:
-
-- ☐ Availability
-- ☐ Operational status
-- ☐ Driver availability
-- ☐ Ambulance type
-- ☐ Required equipment
-- ☐ Emergency priority
-- ☐ Distance/proximity where location data is available
-- ☐ Existing active assignment
-- ☐ Hospital/route constraints where applicable
-
-### Duplicate assignment prevention
-
-The same ambulance must never be assigned to multiple active emergency requests.
-
-Required:
-
-- ☐ Database transaction
-- ☐ Conditional availability check
-- ☐ Atomic status update
-- ☐ Concurrency-safe assignment
-- ☐ Failure rollback
-- ☐ Proper conflict response when ambulance is already assigned
-
-Example:
-
-```text
-Request A ──► Ambulance 101 ──► SUCCESS
-Request B ──► Ambulance 101 ──► REJECTED
-```
-
----
-
-# 7. Database & Prisma Requirements
-
-## Required relational entities
-
-At minimum, the data model should cover:
-
-- ☐ User
-- ☐ Patient/Caller profile
-- ☐ Driver profile
-- ☐ Ambulance
-- ☐ Hospital
-- ☐ EmergencyRequest
-- ☐ Assignment
-- ☐ Trip
-- ☐ Notification
-- ☐ IncidentHistory
-- ☐ AuditLog
-- ☐ Payment
-
-### Database requirements
-
-- ☐ PostgreSQL connected
-- ☐ Prisma schema implemented
-- ☐ Foreign-key relationships
-- ☐ Appropriate indexes
-- ☐ Unique constraints where needed
-- ☐ Enum values for controlled statuses
-- ☐ Created/updated timestamps
-- ☐ Soft-delete field (`deletedAt`) on applicable resources
-- ☐ Payment identifiers/status fields
-- ☐ Audit/incident relationships
-- ☐ No exposed database credentials
-- ☐ Prisma migrations maintained
-
-### Recommended indexes
-
-Index fields used frequently for:
-
-- emergency status
-- emergency priority
-- ambulance status
-- ambulance availability
-- driver availability
-- hospital availability
-- createdAt
-- user email
-- payment status
-- foreign keys used in filtering
-
----
-
-# 8. Authentication
-
-Required:
-
-- ☐ Register
-- ☐ Login
-- ☐ Password hashing
-- ☐ JWT access token
-- ☐ Refresh token flow
-- ☐ Logout/token invalidation strategy
-- ☐ Bearer authentication
-- ☐ Protected routes
-- ☐ Authentication middleware
-- ☐ Token validation
-- ☐ Expiration handling
-- ☐ Secure secret management
-- ☐ No password returned in API responses
-
----
-
-# 9. Authorization / RBAC
-
-Every private endpoint must explicitly enforce permissions.
-
-Required:
-
-- ☐ Role extraction from authenticated user
-- ☐ Role middleware
-- ☐ PATIENT authorization
-- ☐ DISPATCHER authorization
-- ☐ ADMIN authorization
-- ☐ Unauthorized role receives appropriate error
-- ☐ Unauthenticated user cannot access protected resources
-- ☐ Ownership checks for patient-owned resources
-- ☐ Admin-only operations protected
-
----
-
-# 10. Validation
-
-Use **Zod or Joi**.
-
-Required:
-
-- ☐ Request body validation
-- ☐ Query parameter validation
-- ☐ Route parameter validation
-- ☐ Enum validation
-- ☐ Email validation
-- ☐ Password validation
-- ☐ Coordinates validation where used
-- ☐ Pagination validation
-- ☐ Payment input validation
-- ☐ Status-transition validation
-- ☐ Meaningful validation error responses
-
----
-
-# 11. Standard API Response
-
-Every endpoint must follow the standardized response structure.
-
-## Success
-
-```json
-{
-  "success": true,
-  "message": "Operation successful",
-  "data": {}
-}
-```
-
-## Error
-
-```json
-{
-  "success": false,
-  "message": "Something went wrong",
-  "errors": []
-}
-```
-
-Required:
-
-- ☐ Success responses standardized
-- ☐ Error responses standardized
-- ☐ Validation errors structured
-- ☐ HTTP status codes used correctly
-- ☐ No stack traces/secrets exposed in production
-
----
-
-# 12. Minimum 20 Meaningful APIs
-
-The project must implement **at least 20 real, meaningful endpoints**.
-
-## Authentication
-
-- ☐ `POST /api/v1/auth/register`
-- ☐ `POST /api/v1/auth/login`
-- ☐ `POST /api/v1/auth/refresh-token`
-- ☐ `POST /api/v1/auth/logout`
-
-## User/Profile
-
-- ☐ `GET /api/v1/users/me`
-- ☐ `PATCH /api/v1/users/me`
-
-## Emergency Requests
-
-- ☐ `POST /api/v1/emergency-requests`
-- ☐ `GET /api/v1/emergency-requests`
-- ☐ `GET /api/v1/emergency-requests/:id`
-- ☐ `PATCH /api/v1/emergency-requests/:id`
-- ☐ `DELETE /api/v1/emergency-requests/:id` — soft delete
-- ☐ `GET /api/v1/emergency-requests/search?q=keyword`
-
-## Dispatch / Business Operations
-
-- ☐ `PATCH /api/v1/emergency-requests/:id/priority`
-- ☐ `GET /api/v1/emergency-requests/:id/available-ambulances`
-- ☐ `POST /api/v1/emergency-requests/:id/assign`
-- ☐ `POST /api/v1/emergency-requests/:id/cancel`
-- ☐ `PATCH /api/v1/emergency-requests/:id/status`
-- ☐ `GET /api/v1/emergency-requests/my-requests`
-
-## Ambulances
-
-- ☐ `POST /api/v1/ambulances`
-- ☐ `GET /api/v1/ambulances`
-- ☐ `GET /api/v1/ambulances/:id`
-- ☐ `PATCH /api/v1/ambulances/:id`
-- ☐ `DELETE /api/v1/ambulances/:id` — soft delete
-- ☐ `PATCH /api/v1/ambulances/:id/status`
-
-## Drivers
-
-- ☐ `POST /api/v1/drivers`
-- ☐ `GET /api/v1/drivers`
-- ☐ `GET /api/v1/drivers/:id`
-- ☐ `PATCH /api/v1/drivers/:id`
-- ☐ `PATCH /api/v1/drivers/:id/availability`
-
-## Hospitals
-
-- ☐ `POST /api/v1/hospitals`
-- ☐ `GET /api/v1/hospitals`
-- ☐ `GET /api/v1/hospitals/:id`
-- ☐ `PATCH /api/v1/hospitals/:id`
-- ☐ `DELETE /api/v1/hospitals/:id` — soft delete
-- ☐ `PATCH /api/v1/hospitals/:id/availability`
-
-## Trips
-
-- ☐ `GET /api/v1/trips`
-- ☐ `GET /api/v1/trips/:id`
-- ☐ `PATCH /api/v1/trips/:id/status`
-- ☐ `POST /api/v1/trips/:id/complete`
-
-## Payments — Mandatory
-
-- ☐ `POST /api/v1/payments/initiate`
-- ☐ `POST /api/v1/payments/success` or gateway success callback
-- ☐ `POST /api/v1/payments/cancel`
-- ☐ `POST /api/v1/payments/fail`
-- ☐ `POST /api/v1/payments/webhook` where supported
-- ☐ `GET /api/v1/payments/:id`
-
-## Notifications / History
-
-- ☐ `GET /api/v1/notifications`
-- ☐ `PATCH /api/v1/notifications/:id/read`
-- ☐ `GET /api/v1/emergency-requests/:id/incidents`
-
-## Admin
-
-- ☐ `GET /api/v1/admin/users`
-- ☐ `PATCH /api/v1/admin/users/:id/role`
-- ☐ `GET /api/v1/admin/dashboard-stats`
-- ☐ `GET /api/v1/admin/audit-logs`
-
-> The list above intentionally exceeds 20 so the project has enough meaningful coverage without dummy endpoints.
-
----
-
-# 13. Pagination
-
-At least one list endpoint must support:
-
-```http
-?page=1&limit=10
-```
-
-Required:
-
-- ☐ `page`
-- ☐ `limit`
-- ☐ total count
-- ☐ total pages
-- ☐ current page
-- ☐ appropriate default limit
-- ☐ maximum limit protection
-
-Example response:
-
-```json
-{
-  "success": true,
-  "message": "Emergency requests retrieved successfully",
-  "data": {
-    "items": [],
-    "meta": {
-      "page": 1,
-      "limit": 10,
-      "total": 100,
-      "totalPages": 10
-    }
-  }
-}
-```
-
----
-
-# 14. Filtering & Sorting
-
-At least one list API must support filtering and/or sorting.
-
-Example:
-
-```http
-GET /api/v1/emergency-requests?status=REQUESTED&priority=CRITICAL&sortBy=createdAt&sortOrder=desc
-```
-
-Required:
-
-- ☐ Status filter
-- ☐ Priority filter
-- ☐ Date filter where relevant
-- ☐ Sorting
-- ☐ Safe allow-list for sortable fields
-- ☐ Pagination compatibility
-
----
-
-# 15. Search
-
-Search must be meaningful to the domain.
-
-Examples:
-
-```http
-GET /api/v1/emergency-requests/search?q=accident
-GET /api/v1/ambulances?search=AMB-101
-GET /api/v1/hospitals?search=Dhaka
-```
-
-Required:
-
-- ☐ Search query validation
-- ☐ Database-backed search
-- ☐ Search results follow authorization
-- ☐ Search is not a dummy/static implementation
-
----
-
-# 16. Soft Delete
-
-Hard deletion must not be used for applicable core resources.
-
-Required:
-
-- ☐ `deletedAt` field
-- ☐ Soft-delete service logic
-- ☐ Deleted records excluded from normal queries
-- ☐ Unique-field behavior considered
-- ☐ Admin restore strategy where appropriate
-- ☐ Delete endpoint documented as soft delete
-
----
-
-# 17. Audit Logs
-
-Critical system actions must be recorded.
-
-Track at minimum:
-
-- ☐ User creation
-- ☐ Login/security-sensitive events where appropriate
-- ☐ Emergency request creation
-- ☐ Priority change
-- ☐ Ambulance assignment
-- ☐ Driver acceptance
-- ☐ Status change
-- ☐ Hospital selection
-- ☐ Cancellation
-- ☐ Trip completion
-- ☐ User role changes
-- ☐ Resource soft deletion
-- ☐ Payment status changes
-
-Audit record should identify:
-
-- actor/user
-- action
-- entity/resource
-- entity ID
-- previous value where appropriate
-- new value where appropriate
-- timestamp
-- metadata/IP where appropriate
-
----
-
-# 18. Incident History
-
-Each emergency should maintain chronological operational history.
-
-Required events:
-
-1. ☐ Request created
-2. ☐ Priority assigned
-3. ☐ Ambulance assigned
-4. ☐ Driver accepted
-5. ☐ Ambulance departed
-6. ☐ Patient picked up
-7. ☐ Hospital selected
-8. ☐ Hospital arrival
-9. ☐ Trip completed
-10. ☐ Trip cancelled/failed where applicable
-
----
-
-# 19. Notifications
-
-Required where applicable:
-
-- ☐ Dispatcher notified of new emergency
-- ☐ Driver notified of assignment
-- ☐ Patient/caller notified of assignment
-- ☐ Users notified of relevant status changes
-- ☐ Hospital notified of incoming emergency
-- ☐ Notification persistence
-- ☐ Read/unread state
-- ☐ Authorization on notification access
-
-Real-time transport such as Socket.IO is optional unless implemented as a project enhancement.
-
----
-
-# 20. Payment Integration — MANDATORY
-
-This requirement **cannot be skipped**.
-
-Accepted gateway:
-
-- ☐ bKash
-- ☐ Stripe
-- ☐ SSLCommerz
-
-The payment system must be a **real gateway integration**, not a fake/manual status field.
-
-Required:
-
-- ☐ Payment initiation
-- ☐ Gateway request
-- ☐ Secure callback/success handling
-- ☐ Cancellation handling
-- ☐ Failure handling
-- ☐ Webhook where supported
-- ☐ Payment verification
-- ☐ Payment status persistence
-- ☐ Transaction ID persistence
-- ☐ Amount validation
-- ☐ Duplicate payment protection
-- ☐ Payment-to-user relationship
-- ☐ Payment-to-trip/emergency relationship
-- ☐ Invalid callback protection
-- ☐ Secrets stored in environment variables
-- ☐ No secret/API credential committed to Git
-
-Recommended payment states:
-
-```text
-PENDING
-PAID
-FAILED
-CANCELLED
-REFUNDED
-```
-
----
-
-# 21. Transactions & Concurrency
-
-The dispatch workflow must be transaction-safe.
-
-Required:
-
-- ☐ Prisma transaction around assignment
-- ☐ Ambulance availability checked inside transaction
-- ☐ Ambulance status updated atomically
-- ☐ Assignment created atomically
-- ☐ Trip created/updated atomically where required
-- ☐ Rollback on failure
-- ☐ Duplicate assignment conflict handled
-- ☐ Concurrent dispatch requests tested
-
-### Required concurrency scenario
-
-Two dispatch requests attempt to assign the same ambulance simultaneously.
+→ Priority
+→ Find Available Ambulance
+→ Dispatch
+→ Driver Accepts
+→ En Route
+→ Patient Pickup
+→ Hospital Selection
+→ To Hospital
+→ Hospital Arrival
+→ Completed
+→ Ambulance Available Again
+
+Check whether each transition is actually implemented.
+
+Verify:
+
+* Valid transitions
+* Invalid transitions rejected
+* Role restrictions
+* Database persistence
+* Incident history
+* Audit logs
+* Ambulance status synchronization
+* Assignment synchronization
+* Hospital synchronization
+* Resource release
+* Cancellation
+* Failure handling
+
+Identify any state transition that can be skipped incorrectly.
+
+==================================================
+AMBULANCE DISPATCH / CONCURRENCY AUDIT
+======================================
+
+This is one of the most important parts.
+
+Inspect the actual dispatch implementation.
+
+Verify whether ambulance selection considers:
+
+* availability
+* operational status
+* driver availability
+* ambulance type
+* required equipment
+* priority
+* distance where applicable
+* existing active assignment
+
+Then verify duplicate assignment prevention.
+
+Specifically inspect whether the code has:
+
+* Prisma transaction
+* availability check INSIDE transaction
+* atomic status update
+* atomic assignment creation
+* trip creation/update
+* rollback
+* conflict handling
+* concurrency protection
+
+Consider this scenario:
+
+Request A and Request B simultaneously attempt to assign the same ambulance.
 
 Expected:
 
-```text
 Request A → SUCCESS
 Request B → CONFLICT / REJECTED
-```
 
-Only one active assignment may exist.
+Only one active assignment should exist.
 
----
+Explain whether the current implementation actually guarantees this or merely appears to.
 
-# 22. Performance
+==================================================
+PAYMENT AUDIT
+=============
 
-Required:
+PAYMENT IS MANDATORY.
 
-- ☐ Database indexes
-- ☐ Efficient Prisma queries
-- ☐ `select` used where full records are unnecessary
-- ☐ Pagination
-- ☐ Filtering
-- ☐ Search optimization where appropriate
-- ☐ Avoid N+1 queries
-- ☐ Redis caching if useful/required by implementation
-- ☐ No unnecessary database calls
-- ☐ Proper transaction boundaries
+This requirement must NOT be skipped.
 
----
+Verify whether the project integrates a REAL:
 
-# 23. Security
+* bKash
+  OR
+* Stripe
+  OR
+* SSLCommerz
 
-Required:
+Do NOT accept:
 
-- ☐ Password hashing
-- ☐ JWT/Bearer authentication
-- ☐ RBAC
-- ☐ Private route protection
-- ☐ Helmet/security headers
-- ☐ CORS configuration
-- ☐ Rate limiting
-- ☐ Environment variables for secrets
-- ☐ No secrets in Git
-- ☐ Request validation
-- ☐ Safe error messages
-- ☐ SQL injection protection through Prisma
-- ☐ Authorization/ownership checks
-- ☐ Payment callback security
-- ☐ Sensitive data not exposed
-- ☐ Production error stack traces disabled
+* fake payment
+* manually changing payment status
+* mock gateway
+* fake success endpoint
+* hardcoded payment response
 
----
+Verify:
 
-# 24. Rate Limiting
+* payment initiation
+* real gateway request
+* callback
+* success
+* cancellation
+* failure
+* webhook where supported
+* payment verification
+* transaction ID
+* amount validation
+* payment status persistence
+* duplicate payment protection
+* invalid callback protection
+* payment-to-user relation
+* payment-to-trip/emergency relation
+* environment secrets
+* no payment secret committed to Git
 
-Use `express-rate-limit` or an equivalent implementation.
+If payment is missing, explicitly mark the project as NOT 100% complete.
 
-Required:
+==================================================
+DATABASE AUDIT
+==============
 
-- ☐ Global/API rate limiting
-- ☐ Stricter authentication rate limit
-- ☐ Appropriate response for excessive requests
-- ☐ Standard rate-limit headers
-- ☐ Redis-backed store if distributed deployment requires it
+Inspect Prisma schema and migrations.
+
+Verify:
+
+* User
+* Patient/Caller
+* Driver
+* Ambulance
+* Hospital
+* EmergencyRequest
+* Assignment
+* Trip
+* Notification
+* IncidentHistory
+* AuditLog
+* Payment
+
+Check:
+
+* relations
+* foreign keys
+* indexes
+* unique constraints
+* enums
+* timestamps
+* deletedAt
+* payment fields
+* audit relationships
+* incident relationships
+* migration consistency
+* nullable/required fields
+* cascade behavior
+* data integrity
+
+Identify any schema design problems.
+
+==================================================
+SOFT DELETE AUDIT
+=================
+
+Verify actual implementation.
+
+Check:
+
+* deletedAt
+* DELETE endpoints
+* service logic
+* deleted records excluded from normal queries
+* related records handled correctly
+* unique fields considered
+* restore strategy
+* admin authorization
+
+Do NOT mark PASS merely because deletedAt exists.
+
+==================================================
+AUDIT LOG / INCIDENT HISTORY
+============================
+
+Verify whether important actions are actually persisted.
+
+Audit logs should cover where applicable:
+
+* user creation
+* login/security events
+* emergency creation
+* priority change
+* ambulance assignment
+* driver acceptance
+* status change
+* hospital selection
+* cancellation
+* trip completion
+* role change
+* soft delete
+* payment status change
+
+Each log should identify:
+
+* actor
+* action
+* entity
+* entity ID
+* previous value where appropriate
+* new value where appropriate
+* timestamp
+* metadata/IP where appropriate
+
+Also verify chronological IncidentHistory for each emergency.
+
+==================================================
+SECURITY AUDIT
+==============
+
+Inspect:
+
+* bcrypt/password hashing
+* JWT
+* RBAC
+* ownership checks
+* Helmet
+* CORS
+* rate limiting
+* input validation
+* Prisma query safety
+* environment variables
+* secrets
+* error messages
+* production stack traces
+* payment callback security
+
+Look for real security vulnerabilities.
+
+Do not just check whether a package is installed.
+
+Verify whether it is actually configured and used.
+
+==================================================
+RATE LIMITING AUDIT
+===================
+
+Verify:
+
+* global/API limiter
+* authentication limiter
+* windowMs
+* max requests
+* headers
+* response
+* Redis-backed store if required
+* actual middleware application
+
+Also check that error messages match the actual configured time window.
+
+==================================================
+VALIDATION AUDIT
+================
+
+Verify Zod/Joi validation for:
+
+* body
+* query
+* params
+* enums
+* email
+* password
+* coordinates
+* pagination
+* payment
+* status transitions
+
+Check whether invalid input can bypass validation.
+
+==================================================
+API RESPONSE AUDIT
+==================
+
+Verify ALL endpoints follow:
+
+Success:
+
+{
+"success": true,
+"message": "...",
+"data": {}
+}
+
+Error:
+
+{
+"success": false,
+"message": "...",
+"errors": []
+}
+
+Check:
+
+* success format
+* error format
+* validation errors
+* HTTP status codes
+* production-safe errors
+* Prisma errors
+* authentication errors
+* authorization errors
+* conflict errors
+* payment errors
+
+==================================================
+PAGINATION / FILTER / SORT / SEARCH
+===================================
+
+Find the actual implementation.
+
+Verify:
+
+Pagination:
+
+* page
+* limit
+* total
+* totalPages
+* current page
+* default limit
+* maximum limit
+
+Filtering:
+
+* status
+* priority
+* date where relevant
+
+Sorting:
+
+* sortBy
+* sortOrder
+* allow-list
+* SQL injection-safe implementation
+
+Search:
+
+* real database search
+* validated query
+* authorization
+* meaningful domain fields
+
+Do not mark PASS if these are only documented but not implemented.
+
+==================================================
+PERFORMANCE AUDIT
+=================
+
+Inspect:
+
+* database indexes
+* Prisma select
+* Prisma include
+* N+1 queries
+* pagination
+* search performance
+* filtering
+* transaction boundaries
+* unnecessary database queries
+* Redis usage where appropriate
+
+Explain important performance problems.
+
+==================================================
+POSTMAN AUDIT
+=============
+
+Inspect the actual Postman collection.
+
+Verify whether it contains:
+
+* Auth
+* Users/Profile
+* Emergency Requests
+* Ambulances
+* Drivers
+* Hospitals
+* Trips
+* Payments
+* Notifications
+* Admin
+* Audit/Incident History
+
+Verify environment variables:
+
+* base_url
+* access_token
+* refresh_token
+* patient_id
+* dispatcher_id
+* admin_id
+* emergency_request_id
+* ambulance_id
+* driver_id
+* hospital_id
+* trip_id
+* payment_id
+
+Check whether the collection actually works with the current API routes.
+
+Check:
+
+* token extraction
+* ID extraction
+* assertions
+* positive tests
+* negative tests
+* RBAC tests
+* validation tests
+* conflict tests
+* pagination tests
+* filtering tests
+* search tests
+* payment tests
+* transition tests
+* soft delete tests
+
+==================================================
+NEGATIVE TEST AUDIT
+===================
+
+Verify actual tests for:
+
+* duplicate registration
+* wrong password
+* missing token
+* invalid token
+* wrong role
+* invalid body
+* invalid ID
+* missing resource
+* invalid transition
+* unavailable ambulance
+* duplicate ambulance assignment
+* concurrent assignment
+* unauthorized access
+* soft-deleted resource
+* invalid payment callback
+* duplicate payment
+* rate limit violation
+
+==================================================
+DEPLOYMENT AUDIT
+================
+
+Verify actual production deployment.
+
+Check:
+
+* production API URL
+* database connection
+* DATABASE_URL
+* JWT secrets
+* payment credentials
+* CORS
+* migrations
+* health endpoint
+* production API
+* no localhost dependency
+* no secrets in Git
+* README production information
+
+If production API routes differ from local routes, identify them.
+
+==================================================
+README / DOCUMENTATION AUDIT
+============================
+
+Verify README includes:
+
+* project name
+* objective
+* features
+* stack
+* architecture
+* database
+* setup
+* installation
+* migrations
+* seed
+* local development
+* API base URL
+* authentication
+* roles
+* payment
+* Postman
+* deployment
+* testing
+* business rules
+* dispatch logic
+* concurrency explanation
+
+==================================================
+FINAL OUTPUT FORMAT
+===================
+
+After inspecting the complete project, produce the audit in this exact structure.
+
+# 1. FINAL VERDICT
+
+Choose exactly one:
+
+* 100% COMPLETE
+* NOT COMPLETE
+* PARTIALLY COMPLETE
+* CANNOT VERIFY
+
+Then give a short explanation.
+
+# 2. EXECUTIVE SUMMARY
+
+Give:
+
+* Total requirements checked
+* PASS count
+* PARTIAL count
+* FAIL count
+* MISSING count
+* NOT VERIFIED count
+* Estimated compliance percentage
+
+Do NOT calculate 100% unless every mandatory requirement is actually verified.
+
+# 3. REQUIREMENT-BY-REQUIREMENT AUDIT
+
+Create a table:
+
+| # | Requirement | Status | Evidence | Problem | Required Fix |
+| - | ----------- | ------ | -------- | ------- | ------------ |
+
+Every requirement from `Project Requirements.md` must appear.
+
+Do NOT skip sections.
+
+# 4. API AUDIT
+
+Create:
+
+| Method | Route | Auth | Role | Validation | DB Connected | Status | Evidence |
+| ------ | ----- | ---- | ---- | ---------- | ------------ | ------ | -------- |
+
+Also provide:
+
+**Total meaningful APIs: X**
+
+# 5. ROLE PERMISSION MATRIX
+
+Create a table showing:
+
+| Feature/API | PATIENT | DISPATCHER | ADMIN |
+| ----------- | ------- | ---------- | ----- |
+
+# 6. DATABASE AUDIT
+
+List every required entity and its status.
+
+# 7. AUTH & SECURITY AUDIT
+
+Clearly identify vulnerabilities and weaknesses.
+
+# 8. DISPATCH & CONCURRENCY AUDIT
+
+Explain whether duplicate ambulance assignment is truly prevented under concurrent requests.
+
+# 9. PAYMENT AUDIT
+
+This must be explicitly reported.
+
+If real payment integration does not exist:
+
+**CRITICAL: PAYMENT REQUIREMENT NOT SATISFIED**
+
+# 10. POSTMAN AUDIT
+
+Show missing collections, variables and tests.
+
+# 11. DEPLOYMENT AUDIT
+
+Show production problems.
+
+# 12. CRITICAL ISSUES
+
+Rank issues:
+
+🔴 CRITICAL
+🟠 HIGH
+🟡 MEDIUM
+🟢 LOW
+
+# 13. EXACT FIX PLAN
+
+Give me a step-by-step implementation order.
 
 Example:
 
-```ts
-windowMs: 1 * 60 * 1000,
-max: 5
-```
+1. Fix authentication
+2. Fix RBAC
+3. Fix payment
+4. Fix dispatch transaction
+5. Fix state transitions
+6. Fix soft delete
+7. Fix audit logs
+8. Fix Postman
+9. Fix deployment
+10. Final QA
 
-Do not use a misleading error message such as "15 minutes" when the actual window is 1 minute.
+But determine the actual order based on the code.
 
----
+# 14. FINAL 100% CHECKLIST
 
-# 25. CORS
+Create a final checklist containing every mandatory requirement.
 
-Required:
+Use:
 
-- ☐ CORS configured
-- ☐ Allowed origins explicitly controlled
-- ☐ Credentials configured correctly if cookies are used
-- ☐ No unnecessary wildcard production configuration
+✅ PASS
+⚠️ PARTIAL
+❌ FAIL
+❌ MISSING
+❓ NOT VERIFIED
 
----
+# 15. DO NOT HIDE PROBLEMS
 
-# 26. API Versioning
+Be strict.
 
-All APIs must use versioned routes.
+I do NOT want a polite review.
 
-Required format:
+I want an evaluator-style technical audit.
 
-```text
-/api/v1/...
-```
+If something is wrong, tell me directly.
 
-Required:
+If something is incomplete, tell me directly.
 
-- ☐ Version prefix implemented consistently
-- ☐ No important production endpoint bypasses the versioning convention
+If something only looks implemented but is not actually functional, mark it accordingly.
 
----
+If payment is fake, mark it as FAIL.
 
-# 27. RESTful Design
+If concurrency is unsafe, mark it as FAIL.
 
-Required:
+If RBAC is weak, mark it as FAIL.
 
-- ☐ Resource-based URLs
-- ☐ Correct HTTP methods
-- ☐ Meaningful status codes
-- ☐ No unnecessary action endpoints
-- ☐ Business actions use clear action routes where appropriate
-- ☐ Consistent naming
-- ☐ Consistent response format
+If an API exists but is not connected to the database, mark it as FAIL.
 
----
+If a requirement cannot be verified from the available source code, mark it NOT VERIFIED.
 
-# 28. Error Handling
+Do not assume.
 
-Required:
+Do not skip.
 
-- ☐ Central error handler
-- ☐ Custom application error class where appropriate
-- ☐ Prisma errors handled
-- ☐ Validation errors handled
-- ☐ Authentication errors handled
-- ☐ Authorization errors handled
-- ☐ Not-found errors handled
-- ☐ Conflict errors handled
-- ☐ Payment errors handled
-- ☐ Unknown errors handled
-- ☐ Production-safe error output
-
-Recommended status codes:
+Do not reduce the scope.
 
-```text
-200 OK
-201 CREATED
-400 BAD REQUEST
-401 UNAUTHORIZED
-403 FORBIDDEN
-404 NOT FOUND
-409 CONFLICT
-422 UNPROCESSABLE ENTITY
-429 TOO MANY REQUESTS
-500 INTERNAL SERVER ERROR
-```
-
----
-
-# 29. Reports & Analytics
-
-Admin reporting should include meaningful database-backed statistics.
-
-Minimum recommended:
-
-- ☐ Total users
-- ☐ Total emergency requests
-- ☐ Requests by priority
-- ☐ Requests by status
-- ☐ Total ambulances
-- ☐ Available ambulances
-- ☐ Active trips
-- ☐ Completed trips
-- ☐ Cancelled/failed trips
-- ☐ Hospital statistics
-- ☐ Payment totals/status statistics
-- ☐ Time/date-based statistics where appropriate
-
-No static/hardcoded dashboard values.
-
----
-
-# 30. Postman Documentation & Testing
-
-Postman must demonstrate the actual deployed/local APIs.
-
-Required collection sections:
-
-- ☐ Auth
-- ☐ Users/Profile
-- ☐ Emergency Requests
-- ☐ Ambulances
-- ☐ Drivers
-- ☐ Hospitals
-- ☐ Trips
-- ☐ Payments
-- ☐ Notifications
-- ☐ Admin
-- ☐ Audit/Incident History
-
-### Postman environment
-
-Recommended variables:
-
-```text
-base_url
-access_token
-refresh_token
-patient_id
-dispatcher_id
-admin_id
-emergency_request_id
-ambulance_id
-driver_id
-hospital_id
-trip_id
-payment_id
-```
-
-### Postman tests
-
-Where applicable:
-
-- ☐ Status-code assertions
-- ☐ Response structure assertions
-- ☐ Token extraction
-- ☐ ID extraction
-- ☐ Authentication tests
-- ☐ RBAC tests
-- ☐ Validation failure tests
-- ☐ Conflict tests
-- ☐ Pagination tests
-- ☐ Filtering/sorting tests
-- ☐ Search tests
-- ☐ Payment tests
-- ☐ State-transition tests
-- ☐ Soft-delete tests
-
----
-
-# 31. Required Negative Tests
-
-Do not test only successful requests.
-
-Required:
-
-- ☐ Duplicate registration
-- ☐ Wrong password
-- ☐ Missing token
-- ☐ Invalid token
-- ☐ Wrong role
-- ☐ Invalid request body
-- ☐ Invalid ID
-- ☐ Missing resource
-- ☐ Invalid status transition
-- ☐ Assign unavailable ambulance
-- ☐ Concurrent/duplicate ambulance assignment
-- ☐ Unauthorized resource access
-- ☐ Soft-deleted resource access
-- ☐ Invalid payment callback
-- ☐ Duplicate payment
-- ☐ Rate-limit violation
-
----
-
-# 32. Deployment
-
-Required:
-
-- ☐ Production deployment
-- ☐ Production database
-- ☐ Environment variables configured
-- ☐ `DATABASE_URL` configured
-- ☐ JWT secrets configured
-- ☐ Payment credentials configured
-- ☐ CORS production origin configured
-- ☐ Migrations applied
-- ☐ API health endpoint
-- ☐ Production API tested through Postman
-- ☐ No localhost dependency in production
-- ☐ No secret values exposed in repository
-- ☐ README contains production API information
-
-Recommended health endpoint:
-
-```http
-GET /api/v1/health
-```
-
----
-
-# 33. Environment Variables
-
-Secrets must be stored outside source code.
-
-Example:
-
-```env
-NODE_ENV=production
-PORT=5000
-DATABASE_URL=
-JWT_ACCESS_SECRET=
-JWT_REFRESH_SECRET=
-JWT_ACCESS_EXPIRES_IN=
-JWT_REFRESH_EXPIRES_IN=
-
-CORS_ORIGIN=
-
-REDIS_URL=
-
-PAYMENT_PROVIDER=
-PAYMENT_APP_KEY=
-PAYMENT_APP_SECRET=
-PAYMENT_BASE_URL=
-PAYMENT_CALLBACK_URL=
-```
-
-Only variables actually required by the implementation should be present.
-
----
-
-# 34. Project Structure
-
-Recommended modular structure:
-
-```text
-src/
-├── app/
-├── config/
-├── middlewares/
-├── modules/
-│   ├── auth/
-│   ├── user/
-│   ├── emergencyRequest/
-│   ├── ambulance/
-│   ├── driver/
-│   ├── hospital/
-│   ├── assignment/
-│   ├── trip/
-│   ├── notification/
-│   ├── payment/
-│   ├── incident/
-│   └── audit/
-├── routes/
-├── utils/
-├── types/
-├── errors/
-└── server.ts
-
-prisma/
-└── schema.prisma
-
-postman/
-└── Emergency-Ambulance-Dispatch.postman_collection.json
-```
-
-The exact structure may differ, but responsibilities must remain modular.
-
----
-
-# 35. Documentation
-
-README must include:
-
-- ☐ Project name
-- ☐ Project objective
-- ☐ Features
-- ☐ Technology stack
-- ☐ Architecture overview
-- ☐ Database overview
-- ☐ Environment setup
-- ☐ Installation instructions
-- ☐ Migration instructions
-- ☐ Seed instructions
-- ☐ Local development
-- ☐ API base URL
-- ☐ Authentication instructions
-- ☐ Role descriptions
-- ☐ Payment setup
-- ☐ Postman collection
-- ☐ Deployment information
-- ☐ Testing instructions
-- ☐ Important business rules
-- ☐ Concurrency/dispatch explanation
-
----
-
-# 36. Final Submission Requirements
-
-## Planning & Database
-
-- ☐ Requirements document
-- ☐ ERD
-- ☐ Prisma schema
-- ☐ Project setup
-- ☐ API plan
-
-## Auth & Core APIs
-
-- ☐ JWT/Bearer authentication
-- ☐ RBAC middleware
-- ☐ User management
-- ☐ Core CRUD
-- ☐ Validation
-
-## Business Logic
-
-- ☐ 20+ meaningful APIs
-- ☐ Emergency priority logic
-- ☐ Ambulance dispatch logic
-- ☐ Transaction-safe assignment
-- ☐ State transitions
-- ☐ Pagination
-- ☐ Filtering/sorting
-- ☐ Search
-- ☐ Soft delete
-- ☐ Audit logs
-- ☐ Error handling
-- ☐ Rate limiting
-
-## Payment & Testing
-
-- ☐ Real payment gateway
-- ☐ Payment initiation
-- ☐ Success/callback
-- ☐ Cancellation
-- ☐ Failure
-- ☐ Webhook/verification where supported
-- ☐ Payment status tracking
-- ☐ Postman collection
-- ☐ Positive tests
-- ☐ Negative tests
-- ☐ Concurrency tests
-
-## Deployment & Submission
-
-- ☐ Production deployment
-- ☐ Database connected
-- ☐ Environment variables
-- ☐ Production API tested
-- ☐ README polished
-- ☐ ERD/schema included
-- ☐ Postman documentation included
-- ☐ Demo/video prepared
-- ☐ Final QA completed
-
----
-
-# 37. Compliance Scorecard
-
-| Area | Required | Status |
-|---|---:|---|
-| 3 fixed primary roles | Yes | ☐ |
-| Authentication | Yes | ☐ |
-| Bearer token | Yes | ☐ |
-| RBAC | Yes | ☐ |
-| PostgreSQL | Yes | ☐ |
-| Prisma | Yes | ☐ |
-| Zod/Joi validation | Yes | ☐ |
-| 20+ meaningful APIs | Yes | ☐ |
-| API versioning | Yes | ☐ |
-| Standard response format | Yes | ☐ |
-| Pagination | Yes | ☐ |
-| Filtering/sorting | Yes | ☐ |
-| Search | Yes | ☐ |
-| Soft delete | Yes | ☐ |
-| Audit logs | Yes | ☐ |
-| Business workflows | Yes | ☐ |
-| Transaction-safe dispatch | Yes | ☐ |
-| Duplicate assignment prevention | Yes | ☐ |
-| Rate limiting | Yes | ☐ |
-| Helmet | Yes | ☐ |
-| CORS | Yes | ☐ |
-| Payment gateway | **MANDATORY** | ☐ |
-| Payment callback/webhook | **MANDATORY** | ☐ |
-| Payment status tracking | **MANDATORY** | ☐ |
-| Postman documentation | Yes | ☐ |
-| Negative testing | Yes | ☐ |
-| Production deployment | Yes | ☐ |
-| README | Yes | ☐ |
-| ERD | Yes | ☐ |
-| Prisma schema | Yes | ☐ |
-| Final QA | Yes | ☐ |
-
----
-
-# 38. Definition of 100% Complete
-
-The project should be marked **100% COMPLETE** only if:
-
-1. All mandatory requirements in this document are implemented.
-2. Every mandatory API exists and is connected to the real database.
-3. All private APIs enforce Bearer authentication.
-4. RBAC correctly restricts PATIENT, DISPATCHER, and ADMIN operations.
-5. Emergency/ambulance/trip state transitions are validated.
-6. Ambulance assignment is transaction-safe and concurrency-safe.
-7. Duplicate active assignments are impossible.
-8. Pagination, filtering/sorting, and search are demonstrable.
-9. Applicable resources use soft delete.
-10. Critical actions create audit/incident history.
-11. Rate limiting, Helmet, CORS, validation, and safe error handling are active.
-12. A real payment gateway is integrated and payment states are verified from the gateway.
-13. Payment callbacks/webhooks are securely handled.
-14. At least 20 meaningful APIs are documented and tested.
-15. Postman demonstrates both successful and failed scenarios.
-16. Production deployment works without localhost-only dependencies.
-17. Database migrations are applied successfully.
-18. README and project documentation are complete.
-19. No secrets are committed to the repository.
-20. Final end-to-end QA passes.
-
----
-
-# 39. Audit Result
-
-> **Current audit status:** PENDING SOURCE-CODE VERIFICATION
-
-This document defines the complete compliance checklist.  
-A final PASS/FAIL result must be produced after inspecting the current project source, Prisma schema/migrations, environment configuration structure, routes/controllers/services, middleware, payment integration, Postman collection, and deployment configuration.
-
-**Do not claim 100% completion from this document alone.**
+The final goal is to make sure this project is genuinely ready for submission and can satisfy 100% of the requirements.
