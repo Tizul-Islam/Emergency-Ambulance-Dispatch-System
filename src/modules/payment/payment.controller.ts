@@ -6,10 +6,10 @@ import { AppError } from '../../utils/AppError';
 export const initiatePayment = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) throw new AppError(401, 'Unauthenticated');
-    const { tripId } = req.body;
+    const { tripId, provider } = req.body;
     if (!tripId) throw new AppError(400, 'tripId is required');
 
-    const result = await paymentService.initiatePayment(tripId, req.user);
+    const result = await paymentService.initiatePayment(tripId, req.user, provider);
     res.status(200).json(sendSuccessResponse('Payment session initiated successfully', result));
   } catch (error) {
     next(error);
@@ -37,6 +37,19 @@ export const getPaymentById = async (req: Request, res: Response, next: NextFunc
     if (!req.user) throw new AppError(401, 'Unauthenticated');
     const payment = await paymentService.getPaymentById(req.params.id, req.user);
     res.status(200).json(sendSuccessResponse('Payment retrieved successfully', payment));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const executeBkashPayment = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { paymentID, status } = req.query;
+    if (!paymentID || status !== 'success') {
+      throw new AppError(400, 'Invalid bKash callback parameters or payment failed');
+    }
+    const result = await paymentService.executeBkashPayment(paymentID as string);
+    res.status(200).json(sendSuccessResponse('bKash payment executed successfully', result));
   } catch (error) {
     next(error);
   }

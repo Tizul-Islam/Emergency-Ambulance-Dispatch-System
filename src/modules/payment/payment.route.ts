@@ -24,4 +24,10 @@ router.get(
   paymentController.getPaymentById,
 );
 
+router.get(
+  '/bkash/execute',
+  requireRole([Role.PATIENT, Role.ADMIN]),
+  paymentController.executeBkashPayment,
+);
+
 export const PaymentRoutes = router;

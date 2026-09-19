@@ -27,3 +27,10 @@ export const logoutSchema = z.object({
     refreshToken: z.string().min(1, 'Refresh token is required'),
   }),
 });
+
+export const googleLoginSchema = z.object({
+  body: z.object({
+    idToken: z.string().min(1, 'Google ID token is required'),
+    phone: z.string().min(10, 'Phone must be at least 10 characters').optional(),
+  }),
+});

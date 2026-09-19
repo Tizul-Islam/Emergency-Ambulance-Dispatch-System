@@ -49,7 +49,7 @@ const getBkashToken = async (): Promise<string> => {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-    }
+    },
   );
 
   const tokenData = response.data;
@@ -64,7 +64,7 @@ const getBkashToken = async (): Promise<string> => {
 export const initiateBkashPayment = async (
   amount: number,
   merchantInvoiceNumber: string,
-  callbackUrl: string
+  callbackUrl: string,
 ): Promise<{ paymentUrl: string; paymentId: string }> => {
   const token = await getBkashToken();
 
@@ -88,7 +88,7 @@ export const initiateBkashPayment = async (
       params: {
         callbackURL: callbackUrl,
       },
-    }
+    },
   );
 
   return {
@@ -110,7 +110,7 @@ export const executeBkashPayment = async (paymentId: string): Promise<BkashPayme
         Accept: 'application/json',
         'X-APP-Key': BKASH_APP_KEY,
       },
-    }
+    },
   );
 
   return response.data;
@@ -129,7 +129,7 @@ export const queryBkashPayment = async (paymentId: string): Promise<BkashPayment
         Accept: 'application/json',
         'X-APP-Key': BKASH_APP_KEY,
       },
-    }
+    },
   );
 
   return response.data;

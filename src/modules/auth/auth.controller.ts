@@ -37,3 +37,12 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
     next(error);
   }
 };
+
+export const googleLogin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await authService.googleLoginService(req.body.idToken, req.body.phone);
+    res.status(200).json(sendSuccessResponse('Google login successful', data));
+  } catch (error) {
+    next(error);
+  }
+};

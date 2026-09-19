@@ -5,8 +5,10 @@ import rateLimit from 'express-rate-limit';
 import routes from './modules';
 import { errorHandler } from './middlewares/error.middleware';
 import { AppError } from './utils/AppError';
+import { setupSwagger } from './swagger';
 
 const app: Application = express();
+setupSwagger(app);
 
 // Middlewares
 app.use(helmet());

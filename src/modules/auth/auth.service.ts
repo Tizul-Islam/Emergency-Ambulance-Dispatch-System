@@ -116,3 +116,57 @@ export const logoutService = async (token: string) => {
     where: { token },
   });
 };
+
+import { OAuth2Client } from 'google-auth-library';
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleLoginService = async (idToken: string, phone?: string) => {
+  const ticket = await client.verifyIdToken({
+    idToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  if (!payload || !payload.email) {
+    throw new AppError(400, 'Invalid Google ID token');
+  }
+
+  const { email, name, picture } = payload;
+
+  let user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    if (!phone) {
+      throw new AppError(400, 'Phone number is required for first-time Google login');
+    }
+    const dummyPasswordHash = await bcrypt.hash(Math.random().toString(36).slice(-8), 10);
+    user = await prisma.user.create({
+      data: {
+        name: name || 'Google User',
+        email,
+        phone,
+        passwordHash: dummyPasswordHash,
+        role: Role.PATIENT,
+      },
+    });
+  }
+
+  const tokens = generateTokens(user.id, user.role);
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7);
+
+  await prisma.refreshToken.create({
+    data: {
+      token: tokens.refreshToken,
+      userId: user.id,
+      expiresAt,
+    },
+  });
+
+  return {
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, picture },
+    ...tokens,
+  };
+};

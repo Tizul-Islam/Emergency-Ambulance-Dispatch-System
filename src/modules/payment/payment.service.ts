@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2026-08-26.dahlia' as any,
 });
 
-export const initiatePayment = async (tripId: string, currentUser: { id: string; role: Role }) => {
+export const initiatePayment = async (tripId: string, currentUser: { id: string; role: Role }, provider: PaymentProvider = PaymentProvider.STRIPE) => {
   const trip = await prisma.trip.findUnique({
     where: { id: tripId },
     include: {
@@ -32,35 +32,52 @@ export const initiatePayment = async (tripId: string, currentUser: { id: string;
     throw new AppError(400, 'This trip has already been paid for');
   }
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency: 'bdt',
-          product_data: {
-            name: `Emergency Ambulance Trip - ${trip.ambulance.registrationNumber}`,
+  let sessionUrl = '';
+  let transactionId = '';
+
+  if (provider === PaymentProvider.STRIPE) {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'bdt',
+            product_data: {
+              name: `Emergency Ambulance Trip - ${trip.ambulance.registrationNumber}`,
+            },
+            unit_amount: Math.round(trip.fare * 100),
           },
-          unit_amount: Math.round(trip.fare * 100),
+          quantity: 1,
         },
-        quantity: 1,
+      ],
+      mode: 'payment',
+      success_url: `http://localhost:5000/api/v1/payments/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:5000/api/v1/payments/cancel`,
+      metadata: {
+        tripId: trip.id,
       },
-    ],
-    mode: 'payment',
-    success_url: `http://localhost:5000/api/v1/payments/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `http://localhost:5000/api/v1/payments/cancel`,
-    metadata: {
-      tripId: trip.id,
-    },
-  });
+    });
+    sessionUrl = session.url || '';
+    transactionId = session.id;
+  } else if (provider === PaymentProvider.BKASH) {
+    // bKash Skeleton logic
+    // 1. Get Grant Token
+    // 2. Create Payment
+    // For demonstration, mocking the bKash checkout URL as it requires valid merchant credentials
+    const mockBkashTxId = `BKASH_TX_${Date.now()}`;
+    transactionId = mockBkashTxId;
+    sessionUrl = `https://checkout.sandbox.bka.sh/v1.2.0-beta/checkout/payment/create?paymentID=${mockBkashTxId}`;
+  } else {
+    throw new AppError(400, 'Unsupported payment provider');
+  }
 
   const payment = await prisma.payment.upsert({
     where: { tripId: trip.id },
     update: {
       amount: trip.fare,
-      provider: PaymentProvider.STRIPE,
-      transactionId: session.id,
-      paymentUrl: session.url,
+      provider: provider,
+      transactionId: transactionId,
+      paymentUrl: sessionUrl,
       status: PaymentStatus.PENDING,
     },
     create: {
@@ -68,9 +85,9 @@ export const initiatePayment = async (tripId: string, currentUser: { id: string;
       patientId: patientUserId,
       amount: trip.fare,
       currency: 'BDT',
-      provider: PaymentProvider.STRIPE,
-      transactionId: session.id,
-      paymentUrl: session.url,
+      provider: provider,
+      transactionId: transactionId,
+      paymentUrl: sessionUrl,
       status: PaymentStatus.PENDING,
     },
   });
@@ -84,7 +101,7 @@ export const initiatePayment = async (tripId: string, currentUser: { id: string;
     PaymentStatus.PENDING,
   );
 
-  return { url: session.url, paymentId: payment.id };
+  return { url: sessionUrl, paymentId: payment.id };
 };
 
 export const handleWebhook = async (rawBody: Buffer, signature: string) => {
@@ -177,4 +194,48 @@ export const getPaymentById = async (id: string, user: { id: string; role: Role 
   }
 
   return payment;
+};
+
+export const executeBkashPayment = async (paymentID: string) => {
+  // Mock bKash execution logic
+  // In production, you would call bKash execute API and verify the transaction
+  const payment = await prisma.payment.findFirst({
+    where: { transactionId: paymentID, provider: PaymentProvider.BKASH },
+    include: { trip: { include: { emergencyRequest: true } } },
+  });
+
+  if (!payment) {
+    throw new AppError(404, 'bKash payment record not found');
+  }
+
+  if (payment.status === PaymentStatus.SUCCESS) {
+    return payment; // Already successful
+  }
+
+  const updatedPayment = await prisma.payment.update({
+    where: { id: payment.id },
+    data: {
+      status: PaymentStatus.SUCCESS,
+      paidAt: new Date(),
+    },
+    include: { trip: { include: { emergencyRequest: true } } },
+  });
+
+  await logAudit(
+    updatedPayment.patientId,
+    'BKASH_PAYMENT_SUCCESS',
+    'Payment',
+    updatedPayment.id,
+    PaymentStatus.PENDING,
+    PaymentStatus.SUCCESS,
+  );
+
+  await createNotification(
+    updatedPayment.trip.emergencyRequest.patientId,
+    'bKash Payment Successful',
+    'PAYMENT_UPDATE',
+    'Your bKash payment was successful.',
+  );
+
+  return updatedPayment;
 };
