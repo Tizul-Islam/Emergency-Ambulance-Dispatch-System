@@ -42,7 +42,7 @@ export const updateStatus = async (
       include: {
         emergencyRequest: true,
         trips: { take: 1, orderBy: { createdAt: 'desc' } },
-        ambulance: true
+        ambulance: true,
       },
     });
 
@@ -114,8 +114,8 @@ export const updateStatus = async (
         emergencyRequestId: dispatch.emergencyRequestId,
         action: actionDesc,
         actorId: actorId,
-        details: `Status changed from ${currentStatus} to ${newStatus}`
-      }
+        details: `Status changed from ${currentStatus} to ${newStatus}`,
+      },
     });
 
     await tx.auditLog.create({
@@ -194,7 +194,7 @@ async function completeTrip(
     }
   }
 
-  const baseRate = 50; 
+  const baseRate = 50;
   let fare = baseRate * Math.max(distanceKm, 1);
   if (dispatch.emergencyRequest.priority === RequestPriority.CRITICAL) {
     fare *= 1.2;
@@ -255,10 +255,7 @@ export const selectHospital = async (dispatchId: string, hospitalId: string, act
 
     const currentStatus = dispatch.emergencyRequest.status;
     if (!isValidTransition(currentStatus, RequestStatus.TO_HOSPITAL)) {
-      throw new AppError(
-        400,
-        `Invalid status transition from ${currentStatus} to TO_HOSPITAL`,
-      );
+      throw new AppError(400, `Invalid status transition from ${currentStatus} to TO_HOSPITAL`);
     }
 
     const trip = dispatch.trips[0];
@@ -292,20 +289,20 @@ export const selectHospital = async (dispatchId: string, hospitalId: string, act
 
     await tx.ambulance.update({
       where: { id: dispatch.ambulanceId },
-      data: { status: AmbulanceStatus.TO_HOSPITAL }
+      data: { status: AmbulanceStatus.TO_HOSPITAL },
     });
 
     // Notify Hospital (Req 10)
-    // Assuming hospital user/admin would receive this. We create a generic log/event for hospital or if hospital has an admin, we could notify them. 
+    // Assuming hospital user/admin would receive this. We create a generic log/event for hospital or if hospital has an admin, we could notify them.
     // For now, logging to audit
-    
+
     await tx.incidentHistory.create({
       data: {
         emergencyRequestId: dispatch.emergencyRequestId,
         action: 'Hospital selected',
         actorId: actorId,
-        details: `Selected hospital: ${hospital.name}`
-      }
+        details: `Selected hospital: ${hospital.name}`,
+      },
     });
 
     await tx.auditLog.create({
@@ -318,7 +315,7 @@ export const selectHospital = async (dispatchId: string, hospitalId: string, act
       },
     });
 
-    return tx.dispatch.findUnique({
+    return await tx.dispatch.findUnique({
       where: { id: dispatchId },
       include: {
         emergencyRequest: true,

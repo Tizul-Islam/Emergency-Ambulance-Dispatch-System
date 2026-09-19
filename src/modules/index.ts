@@ -16,6 +16,7 @@ const router = Router();
 
 router.use('/health', HealthRoutes);
 router.use('/auth', AuthRoutes);
+router.use('/requests', RequestRoutes);
 router.use('/emergency-requests', RequestRoutes);
 router.use('/ambulances', AmbulanceRoutes);
 router.use('/dispatches', DispatchRoutes);

@@ -13,7 +13,7 @@ router.use(authenticate);
 
 router.post(
   '/initiate',
-  requireRole([Role.PATIENT]),
+  requireRole([Role.PATIENT, Role.ADMIN, Role.DISPATCHER]),
   validate(initiatePaymentSchema),
   paymentController.initiatePayment,
 );

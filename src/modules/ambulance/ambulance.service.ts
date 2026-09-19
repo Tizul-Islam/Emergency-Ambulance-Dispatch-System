@@ -14,6 +14,24 @@ export const createAmbulance = async (data: {
   locationLng: number;
   driverId?: string;
 }) => {
+  // Check if registration number already exists
+  const existingReg = await prisma.ambulance.findUnique({
+    where: { registrationNumber: data.registrationNumber },
+  });
+  if (existingReg) {
+    throw new AppError(400, 'An ambulance with this registration number already exists');
+  }
+
+  // Check if driver is already assigned to another ambulance
+  if (data.driverId) {
+    const existingDriver = await prisma.ambulance.findUnique({
+      where: { driverId: data.driverId },
+    });
+    if (existingDriver) {
+      throw new AppError(400, 'This driver is already assigned to another ambulance');
+    }
+  }
+
   const ambulance = await prisma.ambulance.create({ data });
   await redis.del('ambulances:available');
   return ambulance;

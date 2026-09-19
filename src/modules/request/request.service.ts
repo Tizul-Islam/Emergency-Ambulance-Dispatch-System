@@ -358,8 +358,11 @@ export const assignRequest = async (
         );
       }
 
-      const ambulance = await tx.ambulance.findUnique({ where: { id: targetId } });
-      if (!ambulance?.driverId) {
+      const ambulance = await tx.ambulance.findUnique({
+        where: { id: targetId },
+        include: { driver: true },
+      });
+      if (!ambulance?.driverId || !ambulance.driver) {
         throw new AppError(400, 'Ambulance does not have an assigned driver');
       }
 
@@ -408,14 +411,16 @@ export const assignRequest = async (
       });
 
       // Notify Driver
-      await tx.notification.create({
-        data: {
-          userId: ambulance.driverId,
-          title: 'New Assignment',
-          type: 'DISPATCH',
-          message: 'You have been assigned to a new emergency request.',
-        }
-      });
+      if (ambulance.driver.userId) {
+        await tx.notification.create({
+          data: {
+            userId: ambulance.driver.userId,
+            title: 'New Assignment',
+            type: 'DISPATCH',
+            message: 'You have been assigned to a new emergency request.',
+          },
+        });
+      }
 
       // Notify Patient
       await tx.notification.create({
@@ -429,7 +434,7 @@ export const assignRequest = async (
 
       await redis.del('ambulances:available');
 
-      return tx.dispatch.findUnique({
+      return await tx.dispatch.findUnique({
         where: { id: dispatch.id },
         include: {
           ambulance: true,
@@ -438,6 +443,9 @@ export const assignRequest = async (
           trips: true,
         },
       });
+    }, {
+      maxWait: 5000,
+      timeout: 20000,
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

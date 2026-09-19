@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2026-08-26.dahlia' as any,
 });
 
-export const initiatePayment = async (tripId: string, patientUserId: string) => {
+export const initiatePayment = async (tripId: string, currentUser: { id: string; role: Role }) => {
   const trip = await prisma.trip.findUnique({
     where: { id: tripId },
     include: {
@@ -20,9 +20,11 @@ export const initiatePayment = async (tripId: string, patientUserId: string) => 
   });
 
   if (!trip) throw new AppError(404, 'Trip not found');
-  if (trip.emergencyRequest.patientId !== patientUserId) {
+  if (currentUser.role === Role.PATIENT && trip.emergencyRequest.patientId !== currentUser.id) {
     throw new AppError(403, 'You do not have permission to pay for this trip');
   }
+
+  const patientUserId = trip.emergencyRequest.patientId;
   if (!trip.fare) {
     throw new AppError(400, 'Trip fare has not been calculated yet');
   }

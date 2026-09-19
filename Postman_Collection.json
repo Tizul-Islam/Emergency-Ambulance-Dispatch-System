@@ -1786,7 +1786,7 @@
                 "queue"
               ]
             },
-            "description": "PENDING/DISPATCHING ordered CRITICAL→LOW, then oldest first"
+            "description": "REQUESTED/PRIORITY_ASSIGNED ordered CRITICAL→LOW, then oldest first"
           },
           "event": [
             {
@@ -2117,7 +2117,7 @@
     },
     {
       "name": "Dispatch",
-      "description": "Status machine: PENDING -> DISPATCHING -> ASSIGNED -> EN_ROUTE -> PICKED_UP -> HOSPITAL_SELECTED -> ARRIVED -> COMPLETED. HOSPITAL_SELECTED only via select-hospital.",
+      "description": "Status machine: REQUESTED -> PRIORITY_ASSIGNED -> AMBULANCE_ASSIGNED -> DRIVER_ACCEPTED -> EN_ROUTE -> PATIENT_PICKED_UP -> TO_HOSPITAL -> ARRIVED -> COMPLETED. TO_HOSPITAL only via select-hospital.",
       "item": [
         {
           "name": "Get My Assigned Dispatches",
@@ -2249,6 +2249,156 @@
           ]
         },
         {
+          "name": "Update Status to PRIORITY_ASSIGNED",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dispatches/:dispatchId/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dispatches",
+                ":dispatchId",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "dispatchId",
+                  "value": "{{dispatchId}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PRIORITY_ASSIGNED\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is correct\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Status to AMBULANCE_ASSIGNED",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dispatches/:dispatchId/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dispatches",
+                ":dispatchId",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "dispatchId",
+                  "value": "{{dispatchId}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"AMBULANCE_ASSIGNED\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is correct\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Status to DRIVER_ACCEPTED",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dispatches/:dispatchId/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dispatches",
+                ":dispatchId",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "dispatchId",
+                  "value": "{{dispatchId}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DRIVER_ACCEPTED\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is correct\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
           "name": "Update Status to EN_ROUTE",
           "request": {
             "method": "PATCH",
@@ -2299,7 +2449,7 @@
           ]
         },
         {
-          "name": "Update Status to PICKED_UP",
+          "name": "Update Status to PATIENT_PICKED_UP",
           "request": {
             "method": "PATCH",
             "header": [
@@ -2331,7 +2481,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"PICKED_UP\"\n}"
+              "raw": "{\n  \"status\": \"PATIENT_PICKED_UP\"\n}"
             }
           },
           "event": [
@@ -2349,7 +2499,7 @@
           ]
         },
         {
-          "name": "Select Hospital (HOSPITAL_SELECTED)",
+          "name": "Select Hospital (TO_HOSPITAL)",
           "request": {
             "method": "POST",
             "header": [
@@ -2383,7 +2533,7 @@
               "mode": "raw",
               "raw": "{\n  \"hospitalId\": \"{{hospitalId}}\"\n}"
             },
-            "description": "Allowed only from PICKED_UP"
+            "description": "Allowed only from PATIENT_PICKED_UP"
           },
           "event": [
             {
@@ -2534,7 +2684,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"COMPLETED\"\n}"
             },
-            "description": "Expect 400 if jumping e.g. ASSIGNED → COMPLETED"
+            "description": "Expect 400 if jumping e.g. AMBULANCE_ASSIGNED → COMPLETED"
           },
           "event": [
             {

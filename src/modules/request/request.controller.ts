@@ -42,7 +42,7 @@ export const getMyRequests = async (req: Request, res: Response, next: NextFunct
   try {
     if (!req.user) throw new AppError(401, 'Unauthenticated');
     const { page, limit } = req.query as any;
-    const result = await requestService.getMyRequests(req.user.id, page, limit);
+    const result = await requestService.getMyRequests(req.user.id, Number(page) || 1, Number(limit) || 10);
     res.status(200).json(sendSuccessResponse('My requests retrieved successfully', result));
   } catch (error) {
     next(error);

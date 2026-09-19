@@ -9,7 +9,7 @@ export const initiatePayment = async (req: Request, res: Response, next: NextFun
     const { tripId } = req.body;
     if (!tripId) throw new AppError(400, 'tripId is required');
 
-    const result = await paymentService.initiatePayment(tripId, req.user.id);
+    const result = await paymentService.initiatePayment(tripId, req.user);
     res.status(200).json(sendSuccessResponse('Payment session initiated successfully', result));
   } catch (error) {
     next(error);

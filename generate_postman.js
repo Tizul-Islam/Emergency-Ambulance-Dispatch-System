@@ -287,7 +287,7 @@ const collection = {
           'GET',
           'requests/queue',
           null,
-          'PENDING/DISPATCHING ordered CRITICAL→LOW, then oldest first',
+          'REQUESTED/PRIORITY_ASSIGNED ordered CRITICAL→LOW, then oldest first',
         ),
         createRequest('Get Request by ID', 'GET', 'requests/:requestId'),
         createRequest(
@@ -324,23 +324,32 @@ const collection = {
     {
       name: 'Dispatch',
       description:
-        'Status machine: PENDING -> DISPATCHING -> ASSIGNED -> EN_ROUTE -> PICKED_UP -> HOSPITAL_SELECTED -> ARRIVED -> COMPLETED. HOSPITAL_SELECTED only via select-hospital.',
+        'Status machine: REQUESTED -> PRIORITY_ASSIGNED -> AMBULANCE_ASSIGNED -> DRIVER_ACCEPTED -> EN_ROUTE -> PATIENT_PICKED_UP -> TO_HOSPITAL -> ARRIVED -> COMPLETED. TO_HOSPITAL only via select-hospital.',
       item: [
         createRequest('Get My Assigned Dispatches', 'GET', 'dispatches/my-assigned'),
         createRequest('Search Dispatches', 'GET', 'dispatches/search?q=AMB'),
         createRequest('Get Dispatch by ID', 'GET', 'dispatches/:dispatchId'),
+        createRequest('Update Status to PRIORITY_ASSIGNED', 'PATCH', 'dispatches/:dispatchId/status', {
+          status: 'PRIORITY_ASSIGNED',
+        }),
+        createRequest('Update Status to AMBULANCE_ASSIGNED', 'PATCH', 'dispatches/:dispatchId/status', {
+          status: 'AMBULANCE_ASSIGNED',
+        }),
+        createRequest('Update Status to DRIVER_ACCEPTED', 'PATCH', 'dispatches/:dispatchId/status', {
+          status: 'DRIVER_ACCEPTED',
+        }),
         createRequest('Update Status to EN_ROUTE', 'PATCH', 'dispatches/:dispatchId/status', {
           status: 'EN_ROUTE',
         }),
-        createRequest('Update Status to PICKED_UP', 'PATCH', 'dispatches/:dispatchId/status', {
-          status: 'PICKED_UP',
+        createRequest('Update Status to PATIENT_PICKED_UP', 'PATCH', 'dispatches/:dispatchId/status', {
+          status: 'PATIENT_PICKED_UP',
         }),
         createRequest(
-          'Select Hospital (HOSPITAL_SELECTED)',
+          'Select Hospital (TO_HOSPITAL)',
           'POST',
           'dispatches/:dispatchId/select-hospital',
           { hospitalId: '{{hospitalId}}' },
-          'Allowed only from PICKED_UP',
+          'Allowed only from PATIENT_PICKED_UP',
         ),
         createRequest('Update Status to ARRIVED', 'PATCH', 'dispatches/:dispatchId/status', {
           status: 'ARRIVED',
@@ -353,7 +362,7 @@ const collection = {
           'PATCH',
           'dispatches/:dispatchId/status',
           { status: 'COMPLETED' },
-          'Expect 400 if jumping e.g. ASSIGNED → COMPLETED',
+          'Expect 400 if jumping e.g. AMBULANCE_ASSIGNED → COMPLETED',
         ),
       ],
     },

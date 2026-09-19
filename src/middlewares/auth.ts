@@ -29,7 +29,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     req.user = currentUser;
     next();
   } catch (error) {
-    return next(new AppError(401, 'Invalid token or token has expired'));
+    next(error);
   }
 };
 

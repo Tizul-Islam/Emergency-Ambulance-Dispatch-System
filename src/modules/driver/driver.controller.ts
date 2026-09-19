@@ -12,11 +12,15 @@ export const createDriver = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const getDrivers = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { status, page, limit } = req.query as any;
-    const result = await driverService.getDrivers({ status, page, limit });
-    res.status(200).json(sendSuccessResponse('Drivers retrieved successfully', result));
+  export const getDrivers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { status, page, limit } = req.query as any;
+      const result = await driverService.getDrivers({ 
+        status, 
+        page: Number(page) || 1, 
+        limit: Number(limit) || 10 
+      });
+      res.status(200).json(sendSuccessResponse('Drivers retrieved successfully', result));
   } catch (error) {
     next(error);
   }
