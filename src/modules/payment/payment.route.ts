@@ -9,11 +9,16 @@ const router = Router();
 
 router.post('/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
 
+router.post('/sslcommerz/success', paymentController.handleSslcommerzSuccess);
+router.post('/sslcommerz/fail', paymentController.handleSslcommerzFail);
+router.post('/sslcommerz/cancel', paymentController.handleSslcommerzCancel);
+router.post('/sslcommerz/ipn', paymentController.handleSslcommerzIpn);
+
 router.use(authenticate);
 
 router.post(
   '/initiate',
-  requireRole([Role.PATIENT, Role.ADMIN, Role.DISPATCHER]),
+  requireRole([Role.PATIENT]),
   validate(initiatePaymentSchema),
   paymentController.initiatePayment,
 );

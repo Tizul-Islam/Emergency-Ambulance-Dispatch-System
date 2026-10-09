@@ -54,3 +54,39 @@ export const executeBkashPayment = async (req: Request, res: Response, next: Nex
     next(error);
   }
 };
+
+export const handleSslcommerzSuccess = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await paymentService.handleSslcommerzCallback(req.body, 'SUCCESS');
+    res.redirect(`http://localhost:3000/payments/success?tripId=${req.body.value_a}`);
+  } catch (error) {
+    res.redirect(`http://localhost:3000/payments/fail?tripId=${req.body.value_a}`);
+  }
+};
+
+export const handleSslcommerzFail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await paymentService.handleSslcommerzCallback(req.body, 'FAIL');
+    res.redirect(`http://localhost:3000/payments/fail?tripId=${req.body.value_a}`);
+  } catch (error) {
+    res.redirect(`http://localhost:3000/payments/fail?tripId=${req.body.value_a}`);
+  }
+};
+
+export const handleSslcommerzCancel = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await paymentService.handleSslcommerzCallback(req.body, 'CANCEL');
+    res.redirect(`http://localhost:3000/payments/cancel?tripId=${req.body.value_a}`);
+  } catch (error) {
+    res.redirect(`http://localhost:3000/payments/cancel?tripId=${req.body.value_a}`);
+  }
+};
+
+export const handleSslcommerzIpn = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await paymentService.handleSslcommerzCallback(req.body, 'IPN');
+    res.status(200).send('IPN Processed');
+  } catch (error) {
+    res.status(400).send('IPN Failed');
+  }
+};

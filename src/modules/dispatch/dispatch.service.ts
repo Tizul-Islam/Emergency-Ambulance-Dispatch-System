@@ -228,7 +228,7 @@ export const getDispatchById = async (id: string) => {
 
 export const getMyAssignedDispatches = async (driverUserId: string) => {
   const driver = await prisma.driver.findUnique({ where: { userId: driverUserId } });
-  if (!driver) throw new AppError(404, 'Driver profile not found for user');
+  if (!driver) return [];
 
   return prisma.dispatch.findMany({
     where: {
@@ -240,7 +240,7 @@ export const getMyAssignedDispatches = async (driverUserId: string) => {
   });
 };
 
-export const selectHospital = async (dispatchId: string, hospitalId: string, actorId: string) => {
+export const selectHospital = async (dispatchId: string, hospitalId: string | undefined, actorId: string) => {
   return prisma.$transaction(async (tx) => {
     const dispatch = await tx.dispatch.findUnique({
       where: { id: dispatchId },
@@ -264,14 +264,16 @@ export const selectHospital = async (dispatchId: string, hospitalId: string, act
       throw new AppError(400, 'Hospital already selected for this dispatch');
     }
 
-    const hospital = await tx.hospital.findFirst({
-      where: {
-        id: hospitalId,
-        deletedAt: null,
-        isActive: true,
-        emergencyAvailable: true,
-      },
-    });
+    let hospital;
+    if (hospitalId) {
+      hospital = await tx.hospital.findFirst({
+        where: { id: hospitalId, deletedAt: null, isActive: true, emergencyAvailable: true },
+      });
+    } else {
+      hospital = await tx.hospital.findFirst({
+        where: { deletedAt: null, isActive: true, emergencyAvailable: true },
+      });
+    }
 
     if (!hospital) {
       throw new AppError(400, 'Hospital not available for emergency intake');
@@ -279,7 +281,7 @@ export const selectHospital = async (dispatchId: string, hospitalId: string, act
 
     await tx.trip.update({
       where: { id: trip.id },
-      data: { hospitalId },
+      data: { hospitalId: hospital.id },
     });
 
     await tx.emergencyRequest.update({

@@ -3,17 +3,26 @@ import { PrismaClient, PaymentStatus, PaymentProvider, Role } from '../../genera
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../audit/audit.service';
 import { createNotification } from '../notification/notification.service';
-
+// @ts-ignore
+import SSLCommerzPayment from 'sslcommerz-lts';
 import prisma from '../../utils/prisma';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
   apiVersion: '2026-08-26.dahlia' as any,
 });
 
+const sslcz = new SSLCommerzPayment(
+  process.env.SSLCOMMERZ_STORE_ID || '',
+  process.env.SSLCOMMERZ_STORE_PASSWORD || '',
+  process.env.SSLCOMMERZ_IS_LIVE === 'true'
+);
+
 export const initiatePayment = async (tripId: string, currentUser: { id: string; role: Role }, provider: PaymentProvider = PaymentProvider.STRIPE) => {
   const trip = await prisma.trip.findUnique({
     where: { id: tripId },
     include: {
-      emergencyRequest: true,
+      emergencyRequest: {
+        include: { patient: true }
+      },
       payment: true,
       ambulance: true,
     },
@@ -67,6 +76,57 @@ export const initiatePayment = async (tripId: string, currentUser: { id: string;
     const mockBkashTxId = `BKASH_TX_${Date.now()}`;
     transactionId = mockBkashTxId;
     sessionUrl = `https://checkout.sandbox.bka.sh/v1.2.0-beta/checkout/payment/create?paymentID=${mockBkashTxId}`;
+  } else if (provider === PaymentProvider.SSLCOMMERZ) {
+    const transactionIdVal = `AMB-${trip.id.substring(0, 8)}-${Date.now()}`;
+    transactionId = transactionIdVal;
+    
+    const data = {
+      total_amount: trip.fare,
+      currency: 'BDT',
+      tran_id: transactionIdVal,
+      success_url: `http://localhost:5000/api/v1/payments/sslcommerz/success`,
+      fail_url: `http://localhost:5000/api/v1/payments/sslcommerz/fail`,
+      cancel_url: `http://localhost:5000/api/v1/payments/sslcommerz/cancel`,
+      ipn_url: `http://localhost:5000/api/v1/payments/sslcommerz/ipn`,
+      shipping_method: 'No',
+      product_name: `Ambulance Trip - ${trip.ambulance.registrationNumber}`,
+      product_category: 'Emergency Service',
+      product_profile: 'general',
+      cus_name: trip.emergencyRequest.patient.name || 'Unknown',
+      cus_email: trip.emergencyRequest.patient.email || 'patient@example.com',
+      cus_add1: trip.emergencyRequest.pickupAddress || 'Dhaka',
+      cus_add2: 'N/A',
+      cus_city: 'Dhaka',
+      cus_state: 'Dhaka',
+      cus_postcode: '1000',
+      cus_country: 'Bangladesh',
+      cus_phone: trip.emergencyRequest.patient.phone || '01700000000',
+      cus_fax: '01700000000',
+      ship_name: 'N/A',
+      ship_add1: 'N/A',
+      ship_add2: 'N/A',
+      ship_city: 'N/A',
+      ship_state: 'N/A',
+      ship_postcode: 1000,
+      ship_country: 'Bangladesh',
+      value_a: trip.id
+    };
+    
+    const apiResponse = await sslcz.init(data).catch((err: any) => {
+      console.error('[SSLCOMMERZ INIT ERROR]', {
+        message: err.message,
+        status: err.status || err.statusCode,
+        transactionId: transactionIdVal,
+        isLive: process.env.SSLCOMMERZ_IS_LIVE === 'true'
+      });
+      return null;
+    });
+
+    if (!apiResponse?.GatewayPageURL) {
+      console.error('[SSLCOMMERZ INIT FAILED] GatewayPageURL missing in response:', apiResponse, 'TransactionID:', transactionIdVal);
+      throw new AppError(500, 'Failed to initialize SSLCOMMERZ gateway');
+    }
+    sessionUrl = apiResponse.GatewayPageURL;
   } else {
     throw new AppError(400, 'Unsupported payment provider');
   }
@@ -238,4 +298,71 @@ export const executeBkashPayment = async (paymentID: string) => {
   );
 
   return updatedPayment;
+};
+
+export const handleSslcommerzCallback = async (body: any, status: 'SUCCESS' | 'FAIL' | 'CANCEL' | 'IPN') => {
+  const { val_id, tran_id, status: gatewayStatus, amount, currency, value_a: tripId } = body;
+  
+  if (!tran_id || !tripId) throw new AppError(400, 'Invalid callback payload');
+
+  const payment = await prisma.payment.findFirst({
+    where: { tripId, transactionId: tran_id, provider: PaymentProvider.SSLCOMMERZ },
+    include: { trip: { include: { emergencyRequest: true } } },
+  });
+
+  if (!payment) throw new AppError(404, 'Payment not found');
+  if (payment.status === PaymentStatus.SUCCESS) return payment;
+
+  if (status === 'SUCCESS' || status === 'IPN') {
+    if (gatewayStatus !== 'VALID' && gatewayStatus !== 'VALIDATED') {
+      throw new AppError(400, 'Invalid gateway status');
+    }
+    if (!val_id) throw new AppError(400, 'Validation ID missing');
+
+    const validation = await sslcz.validate({ val_id });
+    if (validation?.status !== 'VALID' && validation?.status !== 'VALIDATED') {
+       throw new AppError(400, 'Validation failed');
+    }
+    if (Number(validation.amount) !== payment.amount || validation.currency !== payment.currency) {
+       throw new AppError(400, 'Amount or currency mismatch');
+    }
+
+    const updated = await prisma.payment.update({
+      where: { id: payment.id },
+      data: { status: PaymentStatus.SUCCESS, paidAt: new Date() },
+    });
+    
+    await logAudit(
+      payment.patientId,
+      'SSLCOMMERZ_PAYMENT_SUCCESS',
+      'Payment',
+      payment.id,
+      payment.status,
+      PaymentStatus.SUCCESS,
+    );
+
+    await createNotification(
+      payment.trip.emergencyRequest.patientId,
+      'Payment Successful',
+      'PAYMENT_UPDATE',
+      'Your SSLCOMMERZ payment was successful.'
+    );
+    return updated;
+  } else if (status === 'FAIL' || status === 'CANCEL') {
+    const finalStatus = status === 'CANCEL' ? PaymentStatus.CANCELLED : PaymentStatus.FAILED;
+    const updated = await prisma.payment.update({
+      where: { id: payment.id },
+      data: { status: finalStatus },
+    });
+    
+    await logAudit(
+      payment.patientId,
+      `SSLCOMMERZ_PAYMENT_${status}`,
+      'Payment',
+      payment.id,
+      payment.status,
+      finalStatus,
+    );
+    return updated;
+  }
 };

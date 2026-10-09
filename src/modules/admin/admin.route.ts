@@ -7,12 +7,15 @@ const router = Router();
 
 // Protect all admin routes
 router.use(authenticate);
+// Dispatcher & Admin can view stats
+router.get('/dashboard-stats', requireRole([Role.ADMIN, Role.DISPATCHER]), adminController.getDashboardStats);
+
+// Protect all admin routes
 router.use(requireRole([Role.ADMIN]));
 
 router.get('/users', adminController.getUsers);
 router.get('/users/search', adminController.searchUsers);
 router.patch('/users/:id/role', adminController.changeUserRole);
-router.get('/dashboard-stats', adminController.getDashboardStats);
 router.get('/audit-logs', adminController.getAuditLogs);
 router.get('/incident-history', adminController.getIncidentHistory);
 

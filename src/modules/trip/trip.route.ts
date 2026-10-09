@@ -11,7 +11,7 @@ router.use(authenticate);
 
 router.get(
   '/',
-  requireRole([Role.ADMIN, Role.DISPATCHER]),
+  requireRole([Role.ADMIN, Role.DISPATCHER, Role.PATIENT]),
   validate(getTripsSchema),
   tripController.getTrips,
 );

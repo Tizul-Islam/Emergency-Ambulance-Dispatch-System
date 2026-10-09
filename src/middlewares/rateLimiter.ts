@@ -1,8 +1,8 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
-import { redis } from '../config';
+import { redis, isMockRedis } from '../config';
 
-const hasRedis = !!process.env.REDIS_URL;
+const hasRedis = !!process.env.REDIS_URL && !isMockRedis;
 
 const createStore = (prefix: string) => {
   if (!hasRedis) return undefined;
@@ -21,7 +21,7 @@ const createStore = (prefix: string) => {
 
 export const authLimiter = rateLimit({
   windowMs: 0.5 * 60 * 1000, // 1 minute
-  max: 5, // Limit each IP to 5 requests per 1 minute
+  max: process.env.NODE_ENV === 'production' ? 5 : 100, // Relax limits in development
   standardHeaders: true,
   legacyHeaders: false,
   store: createStore('rl:auth:'),
@@ -32,7 +32,7 @@ export const authLimiter = rateLimit({
 });
 export const requestLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // Limit each user to 10 requests per windowMs
+  max: process.env.NODE_ENV === 'production' ? 10 : 500, // Relax limits in development
   standardHeaders: true,
   legacyHeaders: false,
   store: createStore('rl:req:'),

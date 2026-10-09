@@ -19,7 +19,7 @@ export const createNotification = async (
 };
 
 export const getMyNotifications = async (userId: string, page: number, limit: number) => {
-  const [notifications, total] = await Promise.all([
+  const [notifications, total, unreadCount] = await Promise.all([
     prisma.notification.findMany({
       where: { userId },
       skip: (page - 1) * limit,
@@ -27,11 +27,12 @@ export const getMyNotifications = async (userId: string, page: number, limit: nu
       orderBy: { createdAt: 'desc' },
     }),
     prisma.notification.count({ where: { userId } }),
+    prisma.notification.count({ where: { userId, isRead: false } }),
   ]);
 
   return {
     data: notifications,
-    meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    meta: { total, page, limit, totalPages: Math.ceil(total / limit), unreadCount },
   };
 };
 

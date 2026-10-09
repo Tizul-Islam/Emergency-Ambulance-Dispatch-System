@@ -7,7 +7,7 @@ import { errorHandler } from './middlewares/error.middleware';
 import { AppError } from './utils/AppError';
 import { setupSwagger } from './swagger';
 
-const app: Application = express();
+const app = express(); 
 setupSwagger(app);
 
 // Middlewares
@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes 
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  max: process.env.NODE_ENV === 'production' ? 100 : 5000, // Relax limits in development
   standardHeaders: true,
   legacyHeaders: false,
 });

@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import app from './app';
+import { initSocket } from './socket';
 
 const port = process.env.PORT || 5000;
 
@@ -14,6 +15,7 @@ if (!process.env.VERCEL) {
   server = app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
+  initSocket(server);
 }
 
 process.on('unhandledRejection', (err: any) => {

@@ -6,6 +6,20 @@ import { redis } from '../../config';
 
 import prisma from '../../utils/prisma';
 
+/** Distinct Dhaka-area coordinates per ambulance status so maps/tracking differ by state. */
+export const LOCATION_BY_STATUS: Record<
+  AmbulanceStatus,
+  { locationLat: number; locationLng: number }
+> = {
+  AVAILABLE: { locationLat: 23.8103, locationLng: 90.4125 }, // Gulshan depot
+  ASSIGNED: { locationLat: 23.7925, locationLng: 90.4078 }, // Heading to Gulshan 2
+  EN_ROUTE: { locationLat: 23.7808, locationLng: 90.4167 }, // Banani corridor
+  PICKING_UP: { locationLat: 23.7461, locationLng: 90.3742 }, // Dhanmondi pickup
+  TO_HOSPITAL: { locationLat: 23.739, locationLng: 90.394 }, // Toward central hospital
+  MAINTENANCE: { locationLat: 23.8223, locationLng: 90.3654 }, // Mirpur workshop
+  OFFLINE: { locationLat: 23.8759, locationLng: 90.3795 }, // Uttara garage
+};
+
 export const createAmbulance = async (data: {
   registrationNumber: string;
   type: AmbulanceType;
@@ -73,13 +87,31 @@ export const updateAmbulance = async (
   const existing = await prisma.ambulance.findFirst({ where: { id, deletedAt: null } });
   if (!existing) throw new AppError(404, 'Ambulance not found');
 
+  const payload = { ...data };
+
+  // When status changes and caller did not send coords, move location by status.
+  if (
+    typeof payload.status === 'string' &&
+    payload.status !== existing.status &&
+    payload.locationLat === undefined &&
+    payload.locationLng === undefined
+  ) {
+    const coords = LOCATION_BY_STATUS[payload.status as AmbulanceStatus];
+    if (coords) {
+      payload.locationLat = coords.locationLat;
+      payload.locationLng = coords.locationLng;
+    }
+  }
+
   const updated = await prisma.ambulance.update({
     where: { id },
-    data,
+    data: payload,
   });
 
   if (data.status && data.status !== existing.status) {
     await logAudit(actorId, 'UPDATE_STATUS', 'Ambulance', id, existing.status, updated.status);
+    await redis.del('ambulances:available');
+  } else if (payload.locationLat !== undefined || payload.locationLng !== undefined) {
     await redis.del('ambulances:available');
   }
 

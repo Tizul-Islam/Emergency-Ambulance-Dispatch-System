@@ -26,6 +26,15 @@ export const createDriver = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+export const getDriverById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const driver = await driverService.getDriverById(req.params.id);
+    res.status(200).json(sendSuccessResponse('Driver retrieved successfully', driver));
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateDriverStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) throw new AppError(401, 'Unauthenticated');

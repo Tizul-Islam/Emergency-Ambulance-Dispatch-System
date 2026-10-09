@@ -32,6 +32,8 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.23.0",
     "rate-limit-redis": "^6.0.1",
+    "socket.io": "^4.8.4",
+    "sslcommerz-lts": "^1.2.0",
     "stripe": "^22.6.1",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",

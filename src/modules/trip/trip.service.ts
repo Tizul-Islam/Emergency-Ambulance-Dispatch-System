@@ -3,11 +3,14 @@ import { AppError } from '../../utils/AppError';
 
 import prisma from '../../utils/prisma';
 
-export const getTrips = async (filters: { status?: TripStatus; page: number; limit: number; sortBy?: string }) => {
-  const { status, page, limit } = filters;
+export const getTrips = async (filters: { status?: TripStatus; page: number; limit: number; sortBy?: string; user: { id: string; role: Role } }) => {
+  const { status, page, limit, user } = filters;
   const where: Record<string, any> = {};
 
   if (status) where.status = status;
+  if (user.role === Role.PATIENT) {
+    where.emergencyRequest = { patientId: user.id };
+  }
 
   const [trips, total] = await Promise.all([
     prisma.trip.findMany({
@@ -16,9 +19,10 @@ export const getTrips = async (filters: { status?: TripStatus; page: number; lim
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
-        emergencyRequest: { select: { id: true, patientId: true, pickupAddress: true, priority: true } },
+        emergencyRequest: { select: { id: true, patientId: true, pickupAddress: true, priority: true, description: true } },
         ambulance: { select: { id: true, registrationNumber: true } },
         hospital: { select: { id: true, name: true } },
+        payment: true,
       },
     }),
     prisma.trip.count({ where }),

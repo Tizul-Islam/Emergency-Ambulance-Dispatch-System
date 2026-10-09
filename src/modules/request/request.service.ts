@@ -43,7 +43,7 @@ export const createRequest = async (
   await logAudit(patientId, 'CREATE_REQUEST', 'EmergencyRequest', request.id, null, request);
 
   // Notify Dispatcher (Req 10)
-  const dispatchers = await prisma.user.findMany({ where: { role: Role.DISPATCHER, isActive: true } });
+  const dispatchers = await prisma.user.findMany({ where: { role: { in: [Role.DISPATCHER, Role.ADMIN] }, isActive: true } });
   if (dispatchers.length > 0) {
     const notifications = dispatchers.map(d => ({
       userId: d.id,
@@ -79,6 +79,7 @@ export const getMyRequests = async (patientId: string, page: number, limit: numb
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
+      include: { trips: { include: { payment: true } } },
     }),
     prisma.emergencyRequest.count({ where }),
   ]);
@@ -107,7 +108,10 @@ export const getAllRequests = async (filters: {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
-      include: { patient: { select: { id: true, name: true, phone: true } } },
+      include: { 
+        patient: { select: { id: true, name: true, phone: true } },
+        trips: { include: { payment: true } }
+      },
     }),
     prisma.emergencyRequest.count({ where }),
   ]);
@@ -135,7 +139,7 @@ export const getRequestById = async (id: string, user: { id: string; role: Role 
     include: {
       patient: { select: { id: true, name: true, phone: true } },
       dispatches: {
-        include: { ambulance: true, driver: true },
+        include: { ambulance: true, driver: true, trips: true },
         orderBy: { assignedAt: 'desc' },
         take: 1,
       },
@@ -250,7 +254,10 @@ export const searchRequests = async (filters: { q: string; page: number; limit: 
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
-      include: { patient: { select: { id: true, name: true, phone: true } } },
+      include: { 
+        patient: { select: { id: true, name: true, phone: true } },
+        trips: { include: { payment: true } }
+      },
     }),
     prisma.emergencyRequest.count({ where }),
   ]);

@@ -6,11 +6,13 @@ import { AppError } from '../../utils/AppError';
 export const getTrips = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { status, page, limit, sortBy } = req.query as any;
+    if (!req.user) throw new AppError(401, 'Unauthenticated');
     const result = await tripService.getTrips({
       status,
       page: Number(page) || 1,
       limit: Number(limit) || 10,
       sortBy,
+      user: req.user,
     });
     res.status(200).json(sendSuccessResponse('Trips retrieved successfully', result));
   } catch (error) {

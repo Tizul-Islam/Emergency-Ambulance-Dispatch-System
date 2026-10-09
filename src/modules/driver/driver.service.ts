@@ -43,6 +43,14 @@ export const getDrivers = async (filters: {
   };
 };
 
+export const getDriverById = async (id: string) => {
+  const driver = await prisma.driver.findFirst({
+    where: { id, deletedAt: null },
+  });
+  if (!driver) throw new AppError(404, 'Driver not found');
+  return driver;
+};
+
 export const updateDriverStatus = async (id: string, status: DriverStatus, actorId: string) => {
   const existing = await prisma.driver.findFirst({ where: { id, deletedAt: null } });
   if (!existing) throw new AppError(404, 'Driver not found');
