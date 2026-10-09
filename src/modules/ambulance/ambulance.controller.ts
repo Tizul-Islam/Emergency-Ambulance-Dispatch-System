@@ -77,7 +77,9 @@ export const getAmbulanceById = async (req: Request, res: Response, next: NextFu
 export const getAvailableAmbulances = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const ambulances = await ambulanceService.getAvailableAmbulances();
-    res.status(200).json(sendSuccessResponse('Available ambulances retrieved successfully', ambulances));
+    res
+      .status(200)
+      .json(sendSuccessResponse('Available ambulances retrieved successfully', ambulances));
   } catch (error) {
     next(error);
   }
