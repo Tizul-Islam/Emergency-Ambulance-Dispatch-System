@@ -20,7 +20,7 @@ const createStore = (prefix: string) => {
 };
 
 export const authLimiter = rateLimit({
-  windowMs: 0.5 * 60 * 1000, // 1 minute
+  windowMs: 1 * 60 * 1000, // 1 minute
   max: process.env.NODE_ENV === 'production' ? 5 : 100, // Relax limits in development
   standardHeaders: true,
   legacyHeaders: false,
