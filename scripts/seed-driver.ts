@@ -6,10 +6,12 @@ async function main() {
       name: 'Driver Rahim',
       phone: '01687654321',
       licenseNumber: 'LIC-5001',
-      status: 'AVAILABLE'
-    }
+      status: 'AVAILABLE',
+    },
   });
   console.log('Driver created:', driver);
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect());
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

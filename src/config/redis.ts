@@ -12,9 +12,7 @@ export const redis = isMockRedis
 
 redis.on('connect', () => {
   console.log(
-    isMockRedis
-      ? 'Connected to Mock Redis successfully'
-      : 'Connected to Redis successfully',
+    isMockRedis ? 'Connected to Mock Redis successfully' : 'Connected to Redis successfully',
   );
 });
 

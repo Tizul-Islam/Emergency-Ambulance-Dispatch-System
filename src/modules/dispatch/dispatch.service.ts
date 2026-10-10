@@ -240,7 +240,11 @@ export const getMyAssignedDispatches = async (driverUserId: string) => {
   });
 };
 
-export const selectHospital = async (dispatchId: string, hospitalId: string | undefined, actorId: string) => {
+export const selectHospital = async (
+  dispatchId: string,
+  hospitalId: string | undefined,
+  actorId: string,
+) => {
   return prisma.$transaction(async (tx) => {
     const dispatch = await tx.dispatch.findUnique({
       where: { id: dispatchId },

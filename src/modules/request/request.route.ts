@@ -62,11 +62,7 @@ router.patch(
   validate(updateRequestSchema),
   requestController.updateRequest,
 );
-router.delete(
-  '/:id',
-  requireRole([Role.PATIENT, Role.ADMIN]),
-  requestController.deleteRequest,
-);
+router.delete('/:id', requireRole([Role.PATIENT, Role.ADMIN]), requestController.deleteRequest);
 router.post(
   '/:id/assign',
   requireRole([Role.DISPATCHER, Role.ADMIN]),

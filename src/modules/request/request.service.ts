@@ -38,14 +38,21 @@ export const createRequest = async (
     },
   });
 
-  await txOrPrismaLogIncident(request.id, 'Request created', patientId, 'Patient created a new emergency request');
+  await txOrPrismaLogIncident(
+    request.id,
+    'Request created',
+    patientId,
+    'Patient created a new emergency request',
+  );
 
   await logAudit(patientId, 'CREATE_REQUEST', 'EmergencyRequest', request.id, null, request);
 
   // Notify Dispatcher (Req 10)
-  const dispatchers = await prisma.user.findMany({ where: { role: { in: [Role.DISPATCHER, Role.ADMIN] }, isActive: true } });
+  const dispatchers = await prisma.user.findMany({
+    where: { role: { in: [Role.DISPATCHER, Role.ADMIN] }, isActive: true },
+  });
   if (dispatchers.length > 0) {
-    const notifications = dispatchers.map(d => ({
+    const notifications = dispatchers.map((d) => ({
       userId: d.id,
       title: 'New Emergency Request',
       type: 'NEW_REQUEST',
@@ -58,15 +65,21 @@ export const createRequest = async (
 };
 
 // Helper to log incident history inside or outside transaction
-const txOrPrismaLogIncident = async (requestId: string, action: string, actorId: string | null, details: string, tx?: Prisma.TransactionClient) => {
+const txOrPrismaLogIncident = async (
+  requestId: string,
+  action: string,
+  actorId: string | null,
+  details: string,
+  tx?: Prisma.TransactionClient,
+) => {
   const client = tx || prisma;
   await client.incidentHistory.create({
     data: {
       emergencyRequestId: requestId,
       action,
       actorId,
-      details
-    }
+      details,
+    },
   });
 };
 
@@ -108,9 +121,9 @@ export const getAllRequests = async (filters: {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
-      include: { 
+      include: {
         patient: { select: { id: true, name: true, phone: true } },
-        trips: { include: { payment: true } }
+        trips: { include: { payment: true } },
       },
     }),
     prisma.emergencyRequest.count({ where }),
@@ -166,7 +179,10 @@ export const cancelRequest = async (id: string, patientId: string) => {
     throw new AppError(403, 'You do not have permission to cancel this request');
   }
 
-  if (existing.status !== RequestStatus.REQUESTED && existing.status !== RequestStatus.PRIORITY_ASSIGNED) {
+  if (
+    existing.status !== RequestStatus.REQUESTED &&
+    existing.status !== RequestStatus.PRIORITY_ASSIGNED
+  ) {
     throw new AppError(400, 'Only requested or priority-assigned requests can be cancelled');
   }
 
@@ -195,7 +211,8 @@ export const updateRequest = async (id: string, patientId: string, data: any) =>
   });
 
   if (!existing) throw new AppError(404, 'Emergency request not found');
-  if (existing.patientId !== patientId) throw new AppError(403, 'You do not have permission to update this request');
+  if (existing.patientId !== patientId)
+    throw new AppError(403, 'You do not have permission to update this request');
   if (existing.status !== RequestStatus.REQUESTED) {
     throw new AppError(400, 'Only requested emergency requests can be updated');
   }
@@ -254,9 +271,9 @@ export const searchRequests = async (filters: { q: string; page: number; limit: 
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
-      include: { 
+      include: {
         patient: { select: { id: true, name: true, phone: true } },
-        trips: { include: { payment: true } }
+        trips: { include: { payment: true } },
       },
     }),
     prisma.emergencyRequest.count({ where }),
@@ -268,26 +285,41 @@ export const searchRequests = async (filters: { q: string; page: number; limit: 
   };
 };
 
-export const updatePriority = async (id: string, priority: RequestPriority, dispatcherId: string) => {
+export const updatePriority = async (
+  id: string,
+  priority: RequestPriority,
+  dispatcherId: string,
+) => {
   const existing = await prisma.emergencyRequest.findFirst({
     where: { id, deletedAt: null },
   });
 
   if (!existing) throw new AppError(404, 'Emergency request not found');
 
-  if (existing.status !== RequestStatus.REQUESTED && existing.status !== RequestStatus.PRIORITY_ASSIGNED) {
-    throw new AppError(400, 'Cannot update priority for a request that has already been dispatched');
+  if (
+    existing.status !== RequestStatus.REQUESTED &&
+    existing.status !== RequestStatus.PRIORITY_ASSIGNED
+  ) {
+    throw new AppError(
+      400,
+      'Cannot update priority for a request that has already been dispatched',
+    );
   }
 
   const updated = await prisma.emergencyRequest.update({
     where: { id },
-    data: { 
+    data: {
       priority,
-      status: RequestStatus.PRIORITY_ASSIGNED
+      status: RequestStatus.PRIORITY_ASSIGNED,
     },
   });
 
-  await txOrPrismaLogIncident(id, 'Priority updated', dispatcherId, `Dispatcher changed priority from ${existing.priority} to ${priority}`);
+  await txOrPrismaLogIncident(
+    id,
+    'Priority updated',
+    dispatcherId,
+    `Dispatcher changed priority from ${existing.priority} to ${priority}`,
+  );
 
   await logAudit(
     dispatcherId,
@@ -307,153 +339,173 @@ export const assignRequest = async (
   ambulanceId?: string,
 ) => {
   try {
-    return await prisma.$transaction(async (tx) => {
-      const request = await tx.emergencyRequest.findFirst({
-        where: {
-          id: requestId,
-          deletedAt: null,
-          status: { in: [RequestStatus.REQUESTED, RequestStatus.PRIORITY_ASSIGNED] },
-        },
-      });
-
-      if (!request) {
-        throw new AppError(404, 'Emergency request not found or not assignable');
-      }
-
-      if (request.status === RequestStatus.REQUESTED) {
-        await tx.emergencyRequest.update({
-          where: { id: requestId },
-          data: { status: RequestStatus.PRIORITY_ASSIGNED },
-        });
-        await txOrPrismaLogIncident(requestId, 'Priority assigned', dispatcherId, `Dispatcher reviewed and marked as ${request.priority}`, tx);
-      }
-
-      let targetId = ambulanceId;
-
-      if (!targetId) {
-        const candidates = await tx.ambulance.findMany({
+    return await prisma.$transaction(
+      async (tx) => {
+        const request = await tx.emergencyRequest.findFirst({
           where: {
+            id: requestId,
+            deletedAt: null,
+            status: { in: [RequestStatus.REQUESTED, RequestStatus.PRIORITY_ASSIGNED] },
+          },
+        });
+
+        if (!request) {
+          throw new AppError(404, 'Emergency request not found or not assignable');
+        }
+
+        if (request.status === RequestStatus.REQUESTED) {
+          await tx.emergencyRequest.update({
+            where: { id: requestId },
+            data: { status: RequestStatus.PRIORITY_ASSIGNED },
+          });
+          await txOrPrismaLogIncident(
+            requestId,
+            'Priority assigned',
+            dispatcherId,
+            `Dispatcher reviewed and marked as ${request.priority}`,
+            tx,
+          );
+        }
+
+        let targetId = ambulanceId;
+
+        if (!targetId) {
+          const candidates = await tx.ambulance.findMany({
+            where: {
+              status: AmbulanceStatus.AVAILABLE,
+              deletedAt: null,
+              isActive: true,
+              driverId: { not: null },
+            },
+          });
+
+          const best = selectNearestAvailable(
+            candidates,
+            request.pickupLat,
+            request.pickupLng,
+            request.priority,
+          );
+
+          if (!best) {
+            throw new AppError(404, 'No available ambulance found matching criteria');
+          }
+          targetId = best.id;
+        }
+
+        const claimed = await tx.ambulance.updateMany({
+          where: {
+            id: targetId,
             status: AmbulanceStatus.AVAILABLE,
             deletedAt: null,
             isActive: true,
-            driverId: { not: null },
+          },
+          data: { status: AmbulanceStatus.ASSIGNED },
+        });
+
+        if (claimed.count === 0) {
+          throw new AppError(
+            409,
+            'Ambulance is not available (possibly assigned by another dispatcher)',
+          );
+        }
+
+        const ambulance = await tx.ambulance.findUnique({
+          where: { id: targetId },
+          include: { driver: true },
+        });
+        if (!ambulance?.driverId || !ambulance.driver) {
+          throw new AppError(400, 'Ambulance does not have an assigned driver');
+        }
+
+        await tx.driver.update({
+          where: { id: ambulance.driverId },
+          data: { status: DriverStatus.ON_TRIP }, // Keeping ON_TRIP for driver status as per schema, or we can assume Driver is ASSIGNED. The requirements didn't change DriverStatus.
+        });
+
+        const dispatch = await tx.dispatch.create({
+          data: {
+            emergencyRequestId: requestId,
+            ambulanceId: targetId,
+            driverId: ambulance.driverId,
+            dispatcherId,
+            status: DispatchStatus.DISPATCHED,
+            assignedAt: new Date(),
           },
         });
 
-        const best = selectNearestAvailable(candidates, request.pickupLat, request.pickupLng, request.priority);
+        await tx.trip.create({
+          data: {
+            emergencyRequestId: requestId,
+            ambulanceId: targetId,
+            dispatchId: dispatch.id,
+            status: TripStatus.ONGOING,
+            startedAt: new Date(),
+          },
+        });
 
-        if (!best) {
-          throw new AppError(404, 'No available ambulance found matching criteria');
-        }
-        targetId = best.id;
-      }
+        await tx.emergencyRequest.update({
+          where: { id: requestId },
+          data: { status: RequestStatus.AMBULANCE_ASSIGNED },
+        });
 
-      const claimed = await tx.ambulance.updateMany({
-        where: {
-          id: targetId,
-          status: AmbulanceStatus.AVAILABLE,
-          deletedAt: null,
-          isActive: true,
-        },
-        data: { status: AmbulanceStatus.ASSIGNED },
-      });
-
-      if (claimed.count === 0) {
-        throw new AppError(
-          409,
-          'Ambulance is not available (possibly assigned by another dispatcher)',
-        );
-      }
-
-      const ambulance = await tx.ambulance.findUnique({
-        where: { id: targetId },
-        include: { driver: true },
-      });
-      if (!ambulance?.driverId || !ambulance.driver) {
-        throw new AppError(400, 'Ambulance does not have an assigned driver');
-      }
-
-      await tx.driver.update({
-        where: { id: ambulance.driverId },
-        data: { status: DriverStatus.ON_TRIP }, // Keeping ON_TRIP for driver status as per schema, or we can assume Driver is ASSIGNED. The requirements didn't change DriverStatus.
-      });
-
-      const dispatch = await tx.dispatch.create({
-        data: {
-          emergencyRequestId: requestId,
-          ambulanceId: targetId,
-          driverId: ambulance.driverId,
+        await txOrPrismaLogIncident(
+          requestId,
+          'Ambulance assigned',
           dispatcherId,
-          status: DispatchStatus.DISPATCHED,
-          assignedAt: new Date(),
-        },
-      });
+          `Ambulance ${ambulance.registrationNumber} assigned to request`,
+          tx,
+        );
 
-      await tx.trip.create({
-        data: {
-          emergencyRequestId: requestId,
-          ambulanceId: targetId,
-          dispatchId: dispatch.id,
-          status: TripStatus.ONGOING,
-          startedAt: new Date(),
-        },
-      });
+        await tx.auditLog.create({
+          data: {
+            userId: dispatcherId,
+            action: 'ASSIGN_REQUEST',
+            entity: 'EmergencyRequest',
+            entityId: requestId,
+            oldValue: request.status,
+            newValue: RequestStatus.AMBULANCE_ASSIGNED,
+          },
+        });
 
-      await tx.emergencyRequest.update({
-        where: { id: requestId },
-        data: { status: RequestStatus.AMBULANCE_ASSIGNED },
-      });
+        // Notify Driver
+        if (ambulance.driver.userId) {
+          await tx.notification.create({
+            data: {
+              userId: ambulance.driver.userId,
+              title: 'New Assignment',
+              type: 'DISPATCH',
+              message: 'You have been assigned to a new emergency request.',
+            },
+          });
+        }
 
-      await txOrPrismaLogIncident(requestId, 'Ambulance assigned', dispatcherId, `Ambulance ${ambulance.registrationNumber} assigned to request`, tx);
-
-      await tx.auditLog.create({
-        data: {
-          userId: dispatcherId,
-          action: 'ASSIGN_REQUEST',
-          entity: 'EmergencyRequest',
-          entityId: requestId,
-          oldValue: request.status,
-          newValue: RequestStatus.AMBULANCE_ASSIGNED,
-        },
-      });
-
-      // Notify Driver
-      if (ambulance.driver.userId) {
+        // Notify Patient
         await tx.notification.create({
           data: {
-            userId: ambulance.driver.userId,
-            title: 'New Assignment',
-            type: 'DISPATCH',
-            message: 'You have been assigned to a new emergency request.',
+            userId: request.patientId,
+            title: 'Ambulance Assigned',
+            type: 'STATUS_UPDATE',
+            message: `Ambulance ${ambulance.registrationNumber} has been ASSIGNED to your request.`,
           },
         });
-      }
 
-      // Notify Patient
-      await tx.notification.create({
-        data: {
-          userId: request.patientId,
-          title: 'Ambulance Assigned',
-          type: 'STATUS_UPDATE',
-          message: `Ambulance ${ambulance.registrationNumber} has been ASSIGNED to your request.`,
-        },
-      });
+        await redis.del('ambulances:available');
 
-      await redis.del('ambulances:available');
-
-      return await tx.dispatch.findUnique({
-        where: { id: dispatch.id },
-        include: {
-          ambulance: true,
-          driver: true,
-          emergencyRequest: true,
-          trips: true,
-        },
-      });
-    }, {
-      maxWait: 5000,
-      timeout: 20000,
-    });
+        return await tx.dispatch.findUnique({
+          where: { id: dispatch.id },
+          include: {
+            ambulance: true,
+            driver: true,
+            emergencyRequest: true,
+            trips: true,
+          },
+        });
+      },
+      {
+        maxWait: 5000,
+        timeout: 20000,
+      },
+    );
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       throw new AppError(

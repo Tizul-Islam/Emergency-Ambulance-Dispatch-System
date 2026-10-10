@@ -8,7 +8,11 @@ const router = Router();
 // Protect all admin routes
 router.use(authenticate);
 // Dispatcher & Admin can view stats
-router.get('/dashboard-stats', requireRole([Role.ADMIN, Role.DISPATCHER]), adminController.getDashboardStats);
+router.get(
+  '/dashboard-stats',
+  requireRole([Role.ADMIN, Role.DISPATCHER]),
+  adminController.getDashboardStats,
+);
 
 // Protect all admin routes
 router.use(requireRole([Role.ADMIN]));

@@ -16,7 +16,10 @@ export const initSocket = (httpServer: HttpServer) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error('Authentication error'));
     try {
-      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'secret') as { id: string, role: string };
+      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'secret') as {
+        id: string;
+        role: string;
+      };
       (socket as any).user = decoded;
       next();
     } catch (err) {
@@ -30,7 +33,7 @@ export const initSocket = (httpServer: HttpServer) => {
       socket.join(user.id);
       console.log(`User ${user.id} connected and joined room ${user.id}`);
     }
-    
+
     socket.on('disconnect', () => {
       console.log(`User ${user?.id} disconnected`);
     });

@@ -13,15 +13,19 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
 const sslcz = new SSLCommerzPayment(
   process.env.SSLCOMMERZ_STORE_ID || '',
   process.env.SSLCOMMERZ_STORE_PASSWORD || '',
-  process.env.SSLCOMMERZ_IS_LIVE === 'true'
+  process.env.SSLCOMMERZ_IS_LIVE === 'true',
 );
 
-export const initiatePayment = async (tripId: string, currentUser: { id: string; role: Role }, provider: PaymentProvider = PaymentProvider.STRIPE) => {
+export const initiatePayment = async (
+  tripId: string,
+  currentUser: { id: string; role: Role },
+  provider: PaymentProvider = PaymentProvider.STRIPE,
+) => {
   const trip = await prisma.trip.findUnique({
     where: { id: tripId },
     include: {
       emergencyRequest: {
-        include: { patient: true }
+        include: { patient: true },
       },
       payment: true,
       ambulance: true,
@@ -79,7 +83,7 @@ export const initiatePayment = async (tripId: string, currentUser: { id: string;
   } else if (provider === PaymentProvider.SSLCOMMERZ) {
     const transactionIdVal = `AMB-${trip.id.substring(0, 8)}-${Date.now()}`;
     transactionId = transactionIdVal;
-    
+
     const data = {
       total_amount: trip.fare,
       currency: 'BDT',
@@ -109,21 +113,26 @@ export const initiatePayment = async (tripId: string, currentUser: { id: string;
       ship_state: 'N/A',
       ship_postcode: 1000,
       ship_country: 'Bangladesh',
-      value_a: trip.id
+      value_a: trip.id,
     };
-    
+
     const apiResponse = await sslcz.init(data).catch((err: any) => {
       console.error('[SSLCOMMERZ INIT ERROR]', {
         message: err.message,
         status: err.status || err.statusCode,
         transactionId: transactionIdVal,
-        isLive: process.env.SSLCOMMERZ_IS_LIVE === 'true'
+        isLive: process.env.SSLCOMMERZ_IS_LIVE === 'true',
       });
       return null;
     });
 
     if (!apiResponse?.GatewayPageURL) {
-      console.error('[SSLCOMMERZ INIT FAILED] GatewayPageURL missing in response:', apiResponse, 'TransactionID:', transactionIdVal);
+      console.error(
+        '[SSLCOMMERZ INIT FAILED] GatewayPageURL missing in response:',
+        apiResponse,
+        'TransactionID:',
+        transactionIdVal,
+      );
       throw new AppError(500, 'Failed to initialize SSLCOMMERZ gateway');
     }
     sessionUrl = apiResponse.GatewayPageURL;
@@ -300,9 +309,12 @@ export const executeBkashPayment = async (paymentID: string) => {
   return updatedPayment;
 };
 
-export const handleSslcommerzCallback = async (body: any, status: 'SUCCESS' | 'FAIL' | 'CANCEL' | 'IPN') => {
+export const handleSslcommerzCallback = async (
+  body: any,
+  status: 'SUCCESS' | 'FAIL' | 'CANCEL' | 'IPN',
+) => {
   const { val_id, tran_id, status: gatewayStatus, amount, currency, value_a: tripId } = body;
-  
+
   if (!tran_id || !tripId) throw new AppError(400, 'Invalid callback payload');
 
   const payment = await prisma.payment.findFirst({
@@ -321,17 +333,17 @@ export const handleSslcommerzCallback = async (body: any, status: 'SUCCESS' | 'F
 
     const validation = await sslcz.validate({ val_id });
     if (validation?.status !== 'VALID' && validation?.status !== 'VALIDATED') {
-       throw new AppError(400, 'Validation failed');
+      throw new AppError(400, 'Validation failed');
     }
     if (Number(validation.amount) !== payment.amount || validation.currency !== payment.currency) {
-       throw new AppError(400, 'Amount or currency mismatch');
+      throw new AppError(400, 'Amount or currency mismatch');
     }
 
     const updated = await prisma.payment.update({
       where: { id: payment.id },
       data: { status: PaymentStatus.SUCCESS, paidAt: new Date() },
     });
-    
+
     await logAudit(
       payment.patientId,
       'SSLCOMMERZ_PAYMENT_SUCCESS',
@@ -345,7 +357,7 @@ export const handleSslcommerzCallback = async (body: any, status: 'SUCCESS' | 'F
       payment.trip.emergencyRequest.patientId,
       'Payment Successful',
       'PAYMENT_UPDATE',
-      'Your SSLCOMMERZ payment was successful.'
+      'Your SSLCOMMERZ payment was successful.',
     );
     return updated;
   } else if (status === 'FAIL' || status === 'CANCEL') {
@@ -354,7 +366,7 @@ export const handleSslcommerzCallback = async (body: any, status: 'SUCCESS' | 'F
       where: { id: payment.id },
       data: { status: finalStatus },
     });
-    
+
     await logAudit(
       payment.patientId,
       `SSLCOMMERZ_PAYMENT_${status}`,

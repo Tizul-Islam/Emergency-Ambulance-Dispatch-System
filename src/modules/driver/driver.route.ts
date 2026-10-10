@@ -26,11 +26,7 @@ router.get(
   validate(getDriversSchema),
   driverController.getDrivers,
 );
-router.get(
-  '/:id',
-  requireRole([Role.ADMIN, Role.DISPATCHER]),
-  driverController.getDriverById,
-);
+router.get('/:id', requireRole([Role.ADMIN, Role.DISPATCHER]), driverController.getDriverById);
 router.patch(
   '/:id/status',
   requireRole([Role.ADMIN, Role.DISPATCHER]),

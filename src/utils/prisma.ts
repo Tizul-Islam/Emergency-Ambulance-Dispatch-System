@@ -42,9 +42,9 @@ if (globalForPrisma.prisma) {
             }
           } catch (err) {}
           return result;
-        }
-      }
-    }
+        },
+      },
+    },
   }) as unknown as PrismaClient;
 
   if (process.env.NODE_ENV !== 'production') {

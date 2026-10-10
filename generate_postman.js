@@ -58,11 +58,11 @@ const createRequest = (name, method, urlPath, bodyObj = null, desc = '') => {
         exec: [
           `pm.test("Status code is correct", function () {`,
           `    pm.expect(pm.response.code).to.be.oneOf([${expectedStatus}]);`,
-          `});`
+          `});`,
         ],
-        type: 'text/javascript'
-      }
-    }
+        type: 'text/javascript',
+      },
+    },
   ];
 
   return req;
@@ -185,11 +185,7 @@ const collection = {
           },
           'type: BASIC | ICU | CARDIAC',
         ),
-        createRequest(
-          'Get Ambulances (AVAILABLE)',
-          'GET',
-          'ambulances/available',
-        ),
+        createRequest('Get Ambulances (AVAILABLE)', 'GET', 'ambulances/available'),
         createRequest('Search Ambulances', 'GET', 'ambulances/search?q=DHA'),
         createRequest('Get Ambulance by ID', 'GET', 'ambulances/:ambulanceId'),
         createRequest('Get Nearest Ambulance', 'GET', 'ambulances/nearest?lat=23.81&lng=90.41'),
@@ -329,21 +325,41 @@ const collection = {
         createRequest('Get My Assigned Dispatches', 'GET', 'dispatches/my-assigned'),
         createRequest('Search Dispatches', 'GET', 'dispatches/search?q=AMB'),
         createRequest('Get Dispatch by ID', 'GET', 'dispatches/:dispatchId'),
-        createRequest('Update Status to PRIORITY_ASSIGNED', 'PATCH', 'dispatches/:dispatchId/status', {
-          status: 'PRIORITY_ASSIGNED',
-        }),
-        createRequest('Update Status to AMBULANCE_ASSIGNED', 'PATCH', 'dispatches/:dispatchId/status', {
-          status: 'AMBULANCE_ASSIGNED',
-        }),
-        createRequest('Update Status to DRIVER_ACCEPTED', 'PATCH', 'dispatches/:dispatchId/status', {
-          status: 'DRIVER_ACCEPTED',
-        }),
+        createRequest(
+          'Update Status to PRIORITY_ASSIGNED',
+          'PATCH',
+          'dispatches/:dispatchId/status',
+          {
+            status: 'PRIORITY_ASSIGNED',
+          },
+        ),
+        createRequest(
+          'Update Status to AMBULANCE_ASSIGNED',
+          'PATCH',
+          'dispatches/:dispatchId/status',
+          {
+            status: 'AMBULANCE_ASSIGNED',
+          },
+        ),
+        createRequest(
+          'Update Status to DRIVER_ACCEPTED',
+          'PATCH',
+          'dispatches/:dispatchId/status',
+          {
+            status: 'DRIVER_ACCEPTED',
+          },
+        ),
         createRequest('Update Status to EN_ROUTE', 'PATCH', 'dispatches/:dispatchId/status', {
           status: 'EN_ROUTE',
         }),
-        createRequest('Update Status to PATIENT_PICKED_UP', 'PATCH', 'dispatches/:dispatchId/status', {
-          status: 'PATIENT_PICKED_UP',
-        }),
+        createRequest(
+          'Update Status to PATIENT_PICKED_UP',
+          'PATCH',
+          'dispatches/:dispatchId/status',
+          {
+            status: 'PATIENT_PICKED_UP',
+          },
+        ),
         createRequest(
           'Select Hospital (TO_HOSPITAL)',
           'POST',
@@ -469,7 +485,7 @@ const attachTest = (folderName, requestName, execLines) => {
   const item = folder.item.find((r) => r.name === requestName);
   if (!item) return;
   if (!item.event) item.event = [{ listen: 'test', script: { exec: [], type: 'text/javascript' } }];
-  const testEvent = item.event.find(e => e.listen === 'test');
+  const testEvent = item.event.find((e) => e.listen === 'test');
   if (testEvent) {
     testEvent.script.exec.push(...execLines);
   } else {

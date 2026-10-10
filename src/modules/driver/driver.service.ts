@@ -9,9 +9,11 @@ export const createDriver = async (data: any) => {
     const existing = await prisma.driver.findUnique({ where: { userId: data.userId } });
     if (existing) return existing;
   }
-  
+
   if (data.licenseNumber) {
-    const existing = await prisma.driver.findUnique({ where: { licenseNumber: data.licenseNumber } });
+    const existing = await prisma.driver.findUnique({
+      where: { licenseNumber: data.licenseNumber },
+    });
     if (existing) return existing;
   }
 

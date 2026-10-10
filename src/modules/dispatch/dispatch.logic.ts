@@ -1,4 +1,9 @@
-import { RequestPriority, AmbulanceStatus, RequestStatus, AmbulanceType } from '../../generated/prisma/client';
+import {
+  RequestPriority,
+  AmbulanceStatus,
+  RequestStatus,
+  AmbulanceType,
+} from '../../generated/prisma/client';
 
 export const PRIORITY_WEIGHTS: Record<RequestPriority, number> = {
   CRITICAL: 1,
@@ -54,25 +59,26 @@ export interface AmbulanceCandidate {
 }
 
 export const selectNearestAvailable = <
-  T extends { id: string; locationLat: number; locationLng: number; status: AmbulanceStatus; type: AmbulanceType },
+  T extends {
+    id: string;
+    locationLat: number;
+    locationLng: number;
+    status: AmbulanceStatus;
+    type: AmbulanceType;
+  },
 >(
   ambulances: T[],
   pickupLat: number,
   pickupLng: number,
-  priority: RequestPriority
+  priority: RequestPriority,
 ): (T & { distanceKm: number }) | null => {
   const available = ambulances.filter((a) => a.status === AmbulanceStatus.AVAILABLE);
   if (available.length === 0) return null;
 
-  let best: (T & { distanceKm: number, score: number }) | null = null;
+  let best: (T & { distanceKm: number; score: number }) | null = null;
 
   for (const amb of available) {
-    const distanceKm = haversineDistance(
-      pickupLat,
-      pickupLng,
-      amb.locationLat,
-      amb.locationLng,
-    );
+    const distanceKm = haversineDistance(pickupLat, pickupLng, amb.locationLat, amb.locationLng);
 
     let score = distanceKm;
 
@@ -95,7 +101,7 @@ export const selectNearestAvailable = <
 
   if (!best) return null;
   const { score, ...result } = best;
-  return result as (T & { distanceKm: number });
+  return result as T & { distanceKm: number };
 };
 
 export const comparePriorityThenAge = (

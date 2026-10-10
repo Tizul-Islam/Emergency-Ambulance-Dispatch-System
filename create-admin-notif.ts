@@ -10,7 +10,7 @@ async function main() {
         title: 'Test Admin Notification',
         message: 'This is a test notification for the admin.',
         type: 'SYSTEM',
-      }
+      },
     });
     console.log('Notification created for admin:', admin.id);
   } else {
@@ -18,4 +18,6 @@ async function main() {
   }
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect());
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

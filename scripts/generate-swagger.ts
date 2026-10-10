@@ -10,10 +10,10 @@ const outputPath = path.join(__dirname, '../src/swagger-output.json');
   try {
     // Generate OpenAPI YAML string from Postman collection
     const yamlStr = await p2o(postmanCollection, null, { defaultTag: 'General' });
-    
+
     // Parse the YAML into a JavaScript object
     const jsonObj = yaml.load(yamlStr);
-    
+
     // Write out the JSON
     fs.writeFileSync(outputPath, JSON.stringify(jsonObj, null, 2));
     console.log(`Swagger JSON successfully generated from Postman collection at ${outputPath}`);
