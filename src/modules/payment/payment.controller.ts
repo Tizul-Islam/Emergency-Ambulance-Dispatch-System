@@ -57,28 +57,34 @@ export const executeBkashPayment = async (req: Request, res: Response, next: Nex
 
 export const handleSslcommerzSuccess = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
     await paymentService.handleSslcommerzCallback(req.body, 'SUCCESS');
-    res.redirect(`http://localhost:3000/payments/success?tripId=${req.body.value_a}`);
+    res.redirect(`${FRONTEND_URL}/payments/success?tripId=${req.body.value_a}`);
   } catch (error) {
-    res.redirect(`http://localhost:3000/payments/fail?tripId=${req.body.value_a}`);
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${FRONTEND_URL}/payments/fail?tripId=${req.body.value_a}`);
   }
 };
 
 export const handleSslcommerzFail = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
     await paymentService.handleSslcommerzCallback(req.body, 'FAIL');
-    res.redirect(`http://localhost:3000/payments/fail?tripId=${req.body.value_a}`);
+    res.redirect(`${FRONTEND_URL}/payments/fail?tripId=${req.body.value_a}`);
   } catch (error) {
-    res.redirect(`http://localhost:3000/payments/fail?tripId=${req.body.value_a}`);
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${FRONTEND_URL}/payments/fail?tripId=${req.body.value_a}`);
   }
 };
 
 export const handleSslcommerzCancel = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
     await paymentService.handleSslcommerzCallback(req.body, 'CANCEL');
-    res.redirect(`http://localhost:3000/payments/cancel?tripId=${req.body.value_a}`);
+    res.redirect(`${FRONTEND_URL}/payments/cancel?tripId=${req.body.value_a}`);
   } catch (error) {
-    res.redirect(`http://localhost:3000/payments/cancel?tripId=${req.body.value_a}`);
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${FRONTEND_URL}/payments/cancel?tripId=${req.body.value_a}`);
   }
 };
 

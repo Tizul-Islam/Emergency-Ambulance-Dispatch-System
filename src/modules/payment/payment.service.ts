@@ -3,7 +3,7 @@ import { PrismaClient, PaymentStatus, PaymentProvider, Role } from '../../genera
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../audit/audit.service';
 import { createNotification } from '../notification/notification.service';
-// @ts-ignore
+// @ts-expect-error sslcommerz-lts has no type definitions
 import SSLCommerzPayment from 'sslcommerz-lts';
 import prisma from '../../utils/prisma';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
@@ -48,6 +48,9 @@ export const initiatePayment = async (
   let sessionUrl = '';
   let transactionId = '';
 
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+
   if (provider === PaymentProvider.STRIPE) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -64,8 +67,8 @@ export const initiatePayment = async (
         },
       ],
       mode: 'payment',
-      success_url: `http://localhost:5000/api/v1/payments/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://localhost:5000/api/v1/payments/cancel`,
+      success_url: `${FRONTEND_URL}/payments/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${FRONTEND_URL}/payments/cancel`,
       metadata: {
         tripId: trip.id,
       },
@@ -88,10 +91,10 @@ export const initiatePayment = async (
       total_amount: trip.fare,
       currency: 'BDT',
       tran_id: transactionIdVal,
-      success_url: `http://localhost:5000/api/v1/payments/sslcommerz/success`,
-      fail_url: `http://localhost:5000/api/v1/payments/sslcommerz/fail`,
-      cancel_url: `http://localhost:5000/api/v1/payments/sslcommerz/cancel`,
-      ipn_url: `http://localhost:5000/api/v1/payments/sslcommerz/ipn`,
+      success_url: `${BACKEND_URL}/api/v1/payments/sslcommerz/success`,
+      fail_url: `${BACKEND_URL}/api/v1/payments/sslcommerz/fail`,
+      cancel_url: `${BACKEND_URL}/api/v1/payments/sslcommerz/cancel`,
+      ipn_url: `${BACKEND_URL}/api/v1/payments/sslcommerz/ipn`,
       shipping_method: 'No',
       product_name: `Ambulance Trip - ${trip.ambulance.registrationNumber}`,
       product_category: 'Emergency Service',

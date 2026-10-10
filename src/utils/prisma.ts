@@ -21,17 +21,20 @@ if (globalForPrisma.prisma) {
         async create({ args, query }) {
           const result = await query(args);
           try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const { getIO } = require('../socket');
             const io = getIO();
             if (io && result && result.userId) {
               io.to(result.userId).emit('notification', result);
             }
+            // eslint-disable-next-line no-empty
           } catch (err) {}
           return result;
         },
         async createMany({ args, query }) {
           const result = await query(args);
           try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             const { getIO } = require('../socket');
             const io = getIO();
             if (io && args.data) {
@@ -40,6 +43,7 @@ if (globalForPrisma.prisma) {
                 if (n.userId) io.to(n.userId).emit('notification', n);
               });
             }
+            // eslint-disable-next-line no-empty
           } catch (err) {}
           return result;
         },
