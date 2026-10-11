@@ -51,6 +51,18 @@ export const initiatePayment = async (
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
   const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
+  if (process.env.NODE_ENV === 'production' && !process.env.BACKEND_URL) {
+    console.warn(
+      '[WARNING] BACKEND_URL is not set in production. Using localhost fallback which may cause SSLCOMMERZ gateway 500 errors.',
+    );
+  }
+
+  // SSLCommerz Sandbox server will crash (500 Error) if it attempts to execute an IPN webhook to localhost.
+  const isLocalhost = BACKEND_URL.includes('localhost') || BACKEND_URL.includes('127.0.0.1');
+  const ipnUrl = isLocalhost
+    ? 'https://sandbox.sslcommerz.com/dummy-ipn' // Dummy public URL to prevent their curl from fatally crashing
+    : `${BACKEND_URL}/api/v1/payments/sslcommerz/ipn`;
+
   if (provider === PaymentProvider.STRIPE) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -88,13 +100,13 @@ export const initiatePayment = async (
     transactionId = transactionIdVal;
 
     const data = {
-      total_amount: trip.fare,
+      total_amount: trip.fare.toString(),
       currency: 'BDT',
       tran_id: transactionIdVal,
       success_url: `${BACKEND_URL}/api/v1/payments/sslcommerz/success`,
       fail_url: `${BACKEND_URL}/api/v1/payments/sslcommerz/fail`,
       cancel_url: `${BACKEND_URL}/api/v1/payments/sslcommerz/cancel`,
-      ipn_url: `${BACKEND_URL}/api/v1/payments/sslcommerz/ipn`,
+      ipn_url: ipnUrl,
       shipping_method: 'No',
       product_name: `Ambulance Trip - ${trip.ambulance.registrationNumber}`,
       product_category: 'Emergency Service',
@@ -114,7 +126,7 @@ export const initiatePayment = async (
       ship_add2: 'N/A',
       ship_city: 'N/A',
       ship_state: 'N/A',
-      ship_postcode: 1000,
+      ship_postcode: '1000',
       ship_country: 'Bangladesh',
       value_a: trip.id,
     };
@@ -316,29 +328,64 @@ export const handleSslcommerzCallback = async (
   body: any,
   status: 'SUCCESS' | 'FAIL' | 'CANCEL' | 'IPN',
 ) => {
-  const { val_id, tran_id, status: gatewayStatus, amount, currency, value_a: tripId } = body;
+  const { val_id, tran_id, status: gatewayStatus, value_a: tripId } = body;
 
-  if (!tran_id || !tripId) throw new AppError(400, 'Invalid callback payload');
+  console.info(
+    `[SSLCOMMERZ CALLBACK] Status: ${status} | Tran_id: ${tran_id || 'N/A'} | GatewayStatus: ${gatewayStatus || 'N/A'} | TripId: ${tripId || 'N/A'}`,
+  );
+
+  if (!tran_id || !tripId) {
+    console.error(`[SSLCOMMERZ CALLBACK FAILED] Missing tran_id or tripId.`);
+    throw new AppError(400, 'Invalid callback payload');
+  }
 
   const payment = await prisma.payment.findFirst({
     where: { tripId, transactionId: tran_id, provider: PaymentProvider.SSLCOMMERZ },
     include: { trip: { include: { emergencyRequest: true } } },
   });
 
-  if (!payment) throw new AppError(404, 'Payment not found');
+  if (!payment) {
+    console.error(`[SSLCOMMERZ CALLBACK FAILED] Payment not found for tran_id: ${tran_id}`);
+    throw new AppError(404, 'Payment not found');
+  }
   if (payment.status === PaymentStatus.SUCCESS) return payment;
 
   if (status === 'SUCCESS' || status === 'IPN') {
     if (gatewayStatus !== 'VALID' && gatewayStatus !== 'VALIDATED') {
+      console.warn(
+        `[SSLCOMMERZ CALLBACK] Invalid gateway status: ${gatewayStatus} for tran_id: ${tran_id}`,
+      );
       throw new AppError(400, 'Invalid gateway status');
     }
-    if (!val_id) throw new AppError(400, 'Validation ID missing');
+    if (!val_id) {
+      console.error(`[SSLCOMMERZ CALLBACK FAILED] Validation ID missing for tran_id: ${tran_id}`);
+      throw new AppError(400, 'Validation ID missing');
+    }
 
-    const validation = await sslcz.validate({ val_id });
-    if (validation?.status !== 'VALID' && validation?.status !== 'VALIDATED') {
+    const validation = await sslcz.validate({ val_id }).catch((err: any) => {
+      console.error(`[SSLCOMMERZ VALIDATION ERROR] API failed`, { message: err.message, tran_id });
+      return null;
+    });
+
+    if (!validation || (validation.status !== 'VALID' && validation.status !== 'VALIDATED')) {
+      console.error(
+        `[SSLCOMMERZ CALLBACK FAILED] Validation API returned invalid status for tran_id: ${tran_id}`,
+        validation,
+      );
       throw new AppError(400, 'Validation failed');
     }
+
+    if (validation.tran_id !== payment.transactionId) {
+      console.error(
+        `[SSLCOMMERZ CALLBACK FAILED] tran_id mismatch for tran_id: ${tran_id}. Expected: ${payment.transactionId}`,
+      );
+      throw new AppError(400, 'Transaction ID mismatch');
+    }
+
     if (Number(validation.amount) !== payment.amount || validation.currency !== payment.currency) {
+      console.error(
+        `[SSLCOMMERZ CALLBACK FAILED] Amount/Currency mismatch for tran_id: ${tran_id}`,
+      );
       throw new AppError(400, 'Amount or currency mismatch');
     }
 
